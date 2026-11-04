@@ -46,7 +46,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
             status.setText(loaded ? "Preset loaded: " + file.getFileName() : "Preset load failed: select a valid JSON preset", juce::dontSendNotification);
         });
     };
-    exportWav.onClick = [this, dir] { auto f=dir.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine.parameters)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
+    exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine.parameters)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
     const char* names[] = { "Velocity", "Brightness", "Decay", "Complexity", "Shimmer", "Noise", "Reverb", "Output Gain" };
     const char* help[] = {
