@@ -7,7 +7,8 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: windows-latest
+    # Pin an image with the MSVC/VS generator used by the CMake build.
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
       - name: Configure
