@@ -3,7 +3,7 @@
 namespace cymbalforge {
 MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
 {
-    title.setText("CYMBALFORGE  /  MODAL CYMBAL SYNTHESIS", juce::dontSendNotification);
+    title.setText("CYMBALFORGE  /  HYBRID METAL SYNTHESIS", juce::dontSendNotification);
     title.setJustificationType(juce::Justification::centredLeft);
     title.setTooltip("CymbalForge: a modal synthesis instrument for acoustic cymbal sounds.");
     status.setJustificationType(juce::Justification::centredRight);
@@ -24,17 +24,19 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     load.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); status.setText(PresetManager::load(f,engine.parameters)?"Preset loaded from Documents/CymbalForge/preset.json":"No valid preset found in Documents/CymbalForge",juce::dontSendNotification); };
     exportWav.onClick = [this, dir] { auto f=dir.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine.parameters)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Brightness", "Decay", "Noise", "Reverb", "Output Gain" };
+    const char* names[] = { "Velocity", "Brightness", "Decay", "Complexity", "Shimmer", "Noise", "Reverb", "Output Gain" };
     const char* help[] = {
         "Strike strength. Higher values create a louder, harder hit.",
         "Spectral brightness. Higher values emphasize higher cymbal partials.",
         "Ring time. Higher values make the cymbal sustain longer.",
+        "Modal density and detune. Higher values create a denser, less pitch-centred metal field.",
+        "Delayed high-frequency bloom. Higher values create more crash-like evolving metallic energy.",
         "Transient wash. Higher values add more metallic noise at the hit.",
         "Room effect amount. Higher values add more simulated ambience.",
         "Final output level. Lower this control if the sound is too loud."
     };
-    std::atomic<float>* values[] = { &e.parameters.velocity, &e.parameters.brightness, &e.parameters.decay, &e.parameters.noise, &e.parameters.reverb, &e.parameters.gain };
-    for (int i = 0; i < 6; ++i) {
+    std::atomic<float>* values[] = { &e.parameters.velocity, &e.parameters.brightness, &e.parameters.decay, &e.parameters.complexity, &e.parameters.shimmer, &e.parameters.noise, &e.parameters.reverb, &e.parameters.gain };
+    for (int i = 0; i < 8; ++i) {
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
         auto* slider = sliders.add(new juce::Slider(names[i]));
