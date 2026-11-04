@@ -28,6 +28,7 @@ target_link_libraries(CymbalForge PRIVATE
   juce::juce_gui_extra juce::juce_audio_utils juce::juce_dsp
   juce::juce_audio_formats juce::juce_audio_devices juce::juce_audio_basics
   juce::juce_events juce::juce_graphics)
+juce_generate_juce_header(CymbalForge)
 
 if(CYMBALFORGE_BUILD_TESTS)
   enable_testing()
@@ -36,5 +37,6 @@ if(CYMBALFORGE_BUILD_TESTS)
     src/audio/CymbalEngine.cpp src/audio/ModalBank.cpp src/audio/NoiseLayer.cpp)
   target_include_directories(CymbalForgeTests PRIVATE src)
   target_link_libraries(CymbalForgeTests PRIVATE juce::juce_audio_basics juce::juce_dsp)
+  juce_generate_juce_header(CymbalForgeTests)
   add_test(NAME CymbalForgeTests COMMAND CymbalForgeTests)
 endif()
