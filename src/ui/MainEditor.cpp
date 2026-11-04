@@ -23,15 +23,29 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
-    save.setTooltip("Save the current sound controls to Documents/CymbalForge/preset.json.");
-    load.setTooltip("Load Documents/CymbalForge/preset.json and restore its sound controls.");
+    save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
+    load.setTooltip("Choose a CymbalForge JSON preset to restore its sound controls.");
     exportWav.setTooltip("Render a 24-bit WAV cymbal hit to Documents/CymbalForge/cymbal-hit.wav.");
     for (auto* button : { &audition, &save, &load, &exportWav }) { button->setName(button->getButtonText()); addAndMakeVisible(button); }
 
     audition.onClick = [this] { engine.strike(engine.parameters.velocity.load(), engine.parameters.position.load()); status.setText("Auditioning current cymbal strike.", juce::dontSendNotification); };
-    auto dir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("CymbalForge"); dir.createDirectory();
-    save.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); status.setText(PresetManager::save(f,engine.parameters)?"Preset saved to Documents/CymbalForge/preset.json":"Preset save failed",juce::dontSendNotification); };
-    load.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); auto loaded=PresetManager::load(f,engine.parameters); if(loaded) modelSelector.setSelectedId(engine.parameters.model.load()+1, juce::dontSendNotification); status.setText(loaded?"Preset loaded from Documents/CymbalForge/preset.json":"No valid preset found in Documents/CymbalForge",juce::dontSendNotification); };
+    auto presetDirectory = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("CymbalForge"); presetDirectory.createDirectory();
+    save.onClick = [this, presetDirectory] {
+        presetChooser = std::make_unique<juce::FileChooser>("Save CymbalForge preset", presetDirectory.getChildFile("untitled-cymbal.json"), "*.json");
+        presetChooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::warnAboutOverwriting, [this] (const juce::FileChooser& chooser) {
+            auto file = chooser.getResult(); if (file == juce::File{}) return;
+            if (! file.hasFileExtension("json")) file = file.withFileExtension("json");
+            status.setText(PresetManager::save(file, engine.parameters) ? "Preset saved: " + file.getFileName() : "Preset save failed", juce::dontSendNotification);
+        });
+    };
+    load.onClick = [this, presetDirectory] {
+        presetChooser = std::make_unique<juce::FileChooser>("Load CymbalForge preset", presetDirectory, "*.json");
+        presetChooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [this] (const juce::FileChooser& chooser) {
+            auto file = chooser.getResult(); if (file == juce::File{}) return;
+            auto loaded = PresetManager::load(file, engine.parameters); if (loaded) modelSelector.setSelectedId(engine.parameters.model.load()+1, juce::dontSendNotification);
+            status.setText(loaded ? "Preset loaded: " + file.getFileName() : "Preset load failed: select a valid JSON preset", juce::dontSendNotification);
+        });
+    };
     exportWav.onClick = [this, dir] { auto f=dir.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine.parameters)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
     const char* names[] = { "Velocity", "Brightness", "Decay", "Complexity", "Shimmer", "Noise", "Reverb", "Output Gain" };

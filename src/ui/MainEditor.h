@@ -15,6 +15,7 @@ private:
     juce::OwnedArray<juce::Label> controlLabels;
     juce::Label title, status, controlHeading, modelLabel;
     juce::ComboBox modelSelector;
+    std::unique_ptr<juce::FileChooser> presetChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"};
 };
 }
