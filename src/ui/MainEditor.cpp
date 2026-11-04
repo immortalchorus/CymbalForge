@@ -10,7 +10,17 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     status.setText("Click the cymbal to audition a strike.", juce::dontSendNotification);
     controlHeading.setText("SOUND CONTROLS", juce::dontSendNotification);
     controlHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(surface);
+    modelLabel.setText("Cymbal Family", juce::dontSendNotification);
+    modelLabel.setTooltip("Choose the underlying modal family: Thin Crash, Dark Ride, or Trash Stack.");
+    modelLabel.setJustificationType(juce::Justification::centredRight);
+    modelSelector.setName("Cymbal Family");
+    modelSelector.setTooltip("Thin Crash is bright and quick; Dark Ride is heavier and more focused; Trash Stack is irregular and noisy.");
+    modelSelector.addItem("Thin Crash — bright, spreading", 1);
+    modelSelector.addItem("Dark Ride — focused, long ring", 2);
+    modelSelector.addItem("Trash Stack — irregular, raw", 3);
+    modelSelector.setSelectedId(e.parameters.model.load() + 1, juce::dontSendNotification);
+    modelSelector.onChange = [this] { engine.parameters.model.store(modelSelector.getSelectedId() - 1); status.setText("Cymbal family changed. Strike to hear the new model.", juce::dontSendNotification); };
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Save the current sound controls to Documents/CymbalForge/preset.json.");
@@ -21,7 +31,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     audition.onClick = [this] { engine.strike(engine.parameters.velocity.load(), engine.parameters.position.load()); status.setText("Auditioning current cymbal strike.", juce::dontSendNotification); };
     auto dir = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("CymbalForge"); dir.createDirectory();
     save.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); status.setText(PresetManager::save(f,engine.parameters)?"Preset saved to Documents/CymbalForge/preset.json":"Preset save failed",juce::dontSendNotification); };
-    load.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); status.setText(PresetManager::load(f,engine.parameters)?"Preset loaded from Documents/CymbalForge/preset.json":"No valid preset found in Documents/CymbalForge",juce::dontSendNotification); };
+    load.onClick = [this, dir] { auto f=dir.getChildFile("preset.json"); auto loaded=PresetManager::load(f,engine.parameters); if(loaded) modelSelector.setSelectedId(engine.parameters.model.load()+1, juce::dontSendNotification); status.setText(loaded?"Preset loaded from Documents/CymbalForge/preset.json":"No valid preset found in Documents/CymbalForge",juce::dontSendNotification); };
     exportWav.onClick = [this, dir] { auto f=dir.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine.parameters)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
     const char* names[] = { "Velocity", "Brightness", "Decay", "Complexity", "Shimmer", "Noise", "Reverb", "Output Gain" };
@@ -50,7 +60,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
 void MainEditor::resized()
 {
     auto b = getLocalBounds().reduced(14);
-    auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(430)); status.setBounds(header);
+    auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(150).reduced(3));
     auto controls = b.removeFromBottom(172); controlHeading.setBounds(controls.removeFromTop(22)); surface.setBounds(b);
     auto width = controls.getWidth() / sliders.size();

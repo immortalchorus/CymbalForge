@@ -5,7 +5,7 @@ namespace cymbalforge {
 struct ModalBank {
     static constexpr int maxModes = 768;
     void prepare(double sampleRate);
-    void strike(float velocity, float position, float brightness, float decay, float complexity, float shimmer, int requestedModes);
+    void strike(float velocity, float position, float brightness, float decay, float complexity, float shimmer, int model, int requestedModes);
     std::array<float, 2> process();
     bool active() const noexcept { return energy > 1.0e-7f; }
 private:

@@ -1,6 +1,6 @@
 # CymbalForge
 
-CymbalForge is a native Windows-first cymbal synthesizer written in C++20 and JUCE. It combines an inharmonic modal bank with a velocity-sensitive noise exciter for playable crash and ride sounds.
+CymbalForge is a native Windows-first cymbal synthesizer written in C++20 and JUCE. It combines a dense inharmonic modal field with a filtered stochastic residual and velocity-sensitive spectral bloom for playable crash, ride, and trash sounds.
 
 ## Build
 
@@ -18,10 +18,11 @@ The app executable is under `build/CymbalForge_artefacts/Release`. The first bui
 
 - Native JUCE desktop UI with 2D bell/bow/edge audition surface
 - Real-time audio through JUCE (WASAPI/ASIO capabilities depend on the installed driver)
-- 32–128 modal resonators, strike position, velocity, brightness, decay, noise and reverb
+- Three labelled cymbal families: Thin Crash, Dark Ride, and Trash Stack
+- 128–768 irregular modal resonators, strike position, velocity, brightness, decay, complexity, shimmer, residual noise and reverb
 - MIDI note input and JSON preset persistence
 - 24-bit WAV single-hit export
-- Deterministic offline rendering and DSP smoke tests
+- Deterministic offline rendering and DSP regression tests for signal, stereo, strike-position, and family variation
 
 ## Roadmap
 

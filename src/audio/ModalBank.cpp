@@ -2,21 +2,28 @@
 #include <cmath>
 namespace cymbalforge {
 void ModalBank::prepare(double sampleRate) { rate = sampleRate; for (auto& m : modes) m = {}; }
-void ModalBank::strike(float velocity, float position, float brightness, float decay, float complexity, float shimmer, int requestedModes) {
+void ModalBank::strike(float velocity, float position, float brightness, float decay, float complexity, float shimmer, int model, int requestedModes) {
     // A cymbal is a dense irregular mode field, not a fundamental with harmonics.
     count = juce::jlimit(64, maxModes, juce::jmax(requestedModes, 128 + int(complexity * float(maxModes - 128))));
     const auto hitRadius = juce::jlimit(0.05f, 0.98f, position);
-    const auto nyquistGuard = float(rate * 0.43);
-    const auto lowFrequency = 90.0f + 120.0f * (1.0f - brightness);
+    const auto modelIndex = juce::jlimit(0, 2, model);
+    // Crash: bright/quick; Ride: heavier and more focused; Trash: irregular and broad.
+    const float lowFrequencyByModel[] { 120.0f, 78.0f, 105.0f };
+    const float topFrequencyByModel[] { 0.45f, 0.39f, 0.46f };
+    const float detuneByModel[] { 1.0f, 0.58f, 1.8f };
+    const float decayByModel[] { 1.0f, 1.35f, 0.72f };
+    const float distributionByModel[] { 0.74f, 0.90f, 0.63f };
+    const auto nyquistGuard = float(rate * topFrequencyByModel[modelIndex]);
+    const auto lowFrequency = lowFrequencyByModel[modelIndex] + 105.0f * (1.0f - brightness);
     for (int i = 0; i < count; ++i) {
         const auto u = (float(i) + random.nextFloat()) / float(count);
-        auto f = lowFrequency * std::exp(std::log(nyquistGuard / lowFrequency) * std::pow(u, 0.74f));
-        f = juce::jmin(nyquistGuard, f * (1.0f + (random.nextFloat() * 2.0f - 1.0f) * (0.012f + complexity * 0.055f)));
+        auto f = lowFrequency * std::exp(std::log(nyquistGuard / lowFrequency) * std::pow(u, distributionByModel[modelIndex]));
+        f = juce::jmin(nyquistGuard, f * (1.0f + (random.nextFloat() * 2.0f - 1.0f) * detuneByModel[modelIndex] * (0.012f + complexity * 0.055f)));
         const auto radialOrder = 1.0f + std::fmod(float(i * 17), 11.0f);
         const auto azimuthOrder = 1.0f + std::fmod(float(i * 7), 13.0f);
         const auto radiusWeight = (0.08f + 0.92f * std::abs(std::sin(juce::MathConstants<float>::pi * radialOrder * hitRadius)) * (0.35f + 0.65f * std::abs(std::sin(azimuthOrder * (0.31f + hitRadius)))));
         const auto spectralTilt = std::pow(1.0f - u, 0.25f + 0.65f * (1.0f - brightness));
-        auto seconds = (0.25f + 8.0f * decay) / (0.72f + 1.25f * std::pow(u, 0.55f));
+        auto seconds = decayByModel[modelIndex] * (0.25f + 8.0f * decay) / (0.72f + 1.25f * std::pow(u, 0.55f));
         auto r = std::exp(-1.0f / (seconds * float(rate)));
         auto theta = juce::MathConstants<float>::twoPi * f / float(rate);
         auto phase = random.nextFloat() * juce::MathConstants<float>::twoPi;

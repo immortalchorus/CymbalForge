@@ -6,8 +6,8 @@
 
 ## Modules
 
-- `audio/ModalBank`: deterministic inharmonic resonator coefficients and sample processing.
-- `audio/NoiseLayer`: filtered stochastic strike transient/wash.
+- `audio/ModalBank`: dense inharmonic resonator field with cymbal-family distributions, nodal-like strike weights and delayed high-band bloom.
+- `audio/NoiseLayer`: filtered stochastic contact transient and metallic residual wash.
 - `audio/CymbalEngine`: parameters, voice lifecycle, stereo rendering and reverb.
 - `ui/`: JUCE components; no DSP implementation is embedded in UI code.
 - `presets/`: human-readable JSON state.
