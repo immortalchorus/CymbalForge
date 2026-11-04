@@ -13,7 +13,8 @@ private:
     CymbalSurface surface;
     juce::OwnedArray<juce::Slider> sliders;
     juce::OwnedArray<juce::Label> controlLabels;
-    juce::Label title, status, controlHeading;
+    juce::Label title, status, controlHeading, modelLabel;
+    juce::ComboBox modelSelector;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"};
 };
 }
