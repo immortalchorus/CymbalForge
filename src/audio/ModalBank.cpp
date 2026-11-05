@@ -23,7 +23,8 @@ void ModalBank::strike(float velocity, float position, float brightness, float d
         const auto azimuthOrder = 1.0f + std::fmod(float(i * 7), 13.0f);
         const auto radiusWeight = (0.08f + 0.92f * std::abs(std::sin(juce::MathConstants<float>::pi * radialOrder * hitRadius)) * (0.35f + 0.65f * std::abs(std::sin(azimuthOrder * (0.31f + hitRadius)))));
         const auto spectralTilt = std::pow(1.0f - u, 0.25f + 0.65f * (1.0f - brightness));
-        auto seconds = decayByModel[modelIndex] * (0.25f + 8.0f * decay) / (0.72f + 1.25f * std::pow(u, 0.55f));
+        // Exponential range: 12 ms at zero through long cymbal sustains at one.
+        auto seconds = decayByModel[modelIndex] * (0.012f * std::pow(850.0f, decay)) / (0.72f + 1.25f * std::pow(u, 0.55f));
         auto r = std::exp(-1.0f / (seconds * float(rate)));
         auto theta = juce::MathConstants<float>::twoPi * f / float(rate);
         auto phase = random.nextFloat() * juce::MathConstants<float>::twoPi;

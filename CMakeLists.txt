@@ -18,7 +18,7 @@ juce_add_gui_app(CymbalForge
 
 target_sources(CymbalForge PRIVATE
   src/app/Main.cpp src/app/MainComponent.cpp
-  src/audio/CymbalEngine.cpp src/audio/ModalBank.cpp src/audio/NoiseLayer.cpp
+  src/audio/CymbalEngine.cpp src/audio/ImpactVoiceCore.cpp src/audio/ModalBank.cpp src/audio/NoiseLayer.cpp
   src/export/OfflineRenderer.cpp src/presets/PresetManager.cpp
   src/ui/CymbalSurface.cpp src/ui/MainEditor.cpp)
 target_include_directories(CymbalForge PRIVATE src)
@@ -34,7 +34,7 @@ if(CYMBALFORGE_BUILD_TESTS)
   enable_testing()
   juce_add_console_app(CymbalForgeTests PRODUCT_NAME "CymbalForgeTests")
   target_sources(CymbalForgeTests PRIVATE tests/CymbalEngineTests.cpp
-    src/audio/CymbalEngine.cpp src/audio/ModalBank.cpp src/audio/NoiseLayer.cpp)
+    src/audio/CymbalEngine.cpp src/audio/ImpactVoiceCore.cpp src/audio/ModalBank.cpp src/audio/NoiseLayer.cpp)
   target_include_directories(CymbalForgeTests PRIVATE src)
   target_link_libraries(CymbalForgeTests PRIVATE juce::juce_audio_basics juce::juce_dsp)
   juce_generate_juce_header(CymbalForgeTests)
