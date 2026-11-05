@@ -2,6 +2,13 @@
 #include "ImpactVoiceCore.h"
 #include <atomic>
 namespace cymbalforge {
-struct CymbalParameters { std::atomic<float> velocity{0.8f}, position{0.65f}, brightness{0.65f}, decay{0.35f}, choke{0.0f}, complexity{0.55f}, shimmer{0.45f}, noise{0.25f}, subLevel{0.0f}, subTune{0.35f}, subDecay{0.35f}, filterCutoff{1.0f}, filterResonance{0.0f}, reverb{0.2f}, gain{0.75f}; std::atomic<int> filterMode{0}, modes{384}, model{0}; };
+struct CymbalParameters {
+    std::atomic<float> velocity{.8f}, position{.65f}, brightness{.65f}, decay{.35f}, choke{0}, complexity{.55f}, shimmer{.45f}, noise{.25f};
+    std::atomic<float> subLevel{0}, subTune{.35f}, subDecay{.35f}, subDelay{0}, filterCutoff{1}, filterResonance{0}, modLfoRate{.25f}, modLfoDepth{0}, reverb{.2f}, gain{.75f};
+    std::array<std::atomic<float>,4> sampleLevel{}, sampleTune{}, sampleAttack{}, sampleRelease{}, sampleDelay{}, sampleLfoRate{}, sampleLfoDepth{};
+    std::atomic<int> filterMode{0}, modTarget{0}, modes{384}, model{0};
+    CymbalParameters() { for(int i=0;i<4;++i){ sampleLevel[(size_t)i]=0; sampleTune[(size_t)i]=.5f; sampleAttack[(size_t)i]=0; sampleRelease[(size_t)i]=.35f; sampleDelay[(size_t)i]=0; sampleLfoRate[(size_t)i]=.25f; sampleLfoDepth[(size_t)i]=0; } }
+    ImpactControls snapshot() const noexcept;
+};
 class CymbalEngine { public: CymbalParameters parameters; void prepare(double rate, int block); void strike(float velocity, float position); void render(juce::AudioBuffer<float>& buffer, int start, int count); bool loadSampleSlot(int slot,const juce::File&); private: ImpactVoiceCore impact; juce::dsp::Reverb reverb; juce::AudioFormatManager formats; };
 }
