@@ -211,9 +211,9 @@ void MainEditor::applyStarterSound(int id)
 {
     auto& p = engine.parameters;
     if (id == 2) { p.model = 1; p.decay = .01f; p.choke = .85f; p.complexity = .22f; p.brightness = .35f; p.noise = .08f; p.subLevel = .08f; p.subDecay = .04f; p.filterMode = 2; p.filterCutoff = .62f; p.reverb = .03f; }
-    if (id == 3) { p.model = 2; p.decay = .14f; p.choke = .45f; p.complexity = .72f; p.brightness = .28f; p.noise = .56f; p.noiseTone = .25f; p.subLevel = .82f; p.subTune = .15f; p.subDecay = .46f; p.subDelay = .04f; p.transient = .68f; p.drive = .27f; p.filterMode = 1; p.filterCutoff = .55f; p.filterResonance = .20f; p.reverb = .10f; }
+    if (id == 3) { p.model = 2; p.decay = .14f; p.choke = .45f; p.complexity = .72f; p.brightness = .28f; p.noise = .56f; p.noiseTone = .25f; p.subLevel = .82f; p.subTune = .15f; p.subDecay = .46f; p.subDelay = .04f; p.rattle = .72f; p.pitchDrift = .28f; p.transient = .68f; p.drive = .27f; p.filterMode = 1; p.filterCutoff = .55f; p.filterResonance = .20f; p.reverb = .10f; }
     if (id == 4) { p.model = 1; p.decay = .70f; p.choke = .0f; p.complexity = .40f; p.brightness = .42f; p.noise = .13f; p.subLevel = .0f; p.filterMode = 0; p.reverb = .25f; }
-    if (id == 5) { p.model = 0; p.decay = .62f; p.choke = .0f; p.complexity = .90f; p.brightness = .75f; p.shimmer = .88f; p.noise = .33f; p.noiseTone = .78f; p.modLfoDepth = .32f; p.modLfoRate = .38f; p.modTarget = 1; p.lfoSync = 1; p.tempoBpm = 96.0f; p.filterMode = 3; p.filterCutoff = .76f; p.filterResonance = .32f; p.reverb = .42f; }
+    if (id == 5) { p.model = 0; p.decay = .62f; p.choke = .0f; p.complexity = .90f; p.brightness = .75f; p.shimmer = .88f; p.noise = .33f; p.noiseTone = .78f; p.rattle = .38f; p.pitchDrift = .55f; p.modLfoDepth = .32f; p.modLfoRate = .38f; p.modTarget = 1; p.lfoSync = 1; p.tempoBpm = 96.0f; p.filterMode = 3; p.filterCutoff = .76f; p.filterResonance = .32f; p.reverb = .42f; }
     refreshFromEngine();
     status.setText("Starter sound loaded. Strike the cymbal to audition it.", juce::dontSendNotification);
 }
