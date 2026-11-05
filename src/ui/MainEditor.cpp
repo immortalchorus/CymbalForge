@@ -29,8 +29,13 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     lfoSyncSelector.addItem("Free Hz", 1); lfoSyncSelector.addItem("Tempo Sync", 2); lfoSyncSelector.setSelectedId(e.parameters.lfoSync.load() + 1, juce::dontSendNotification);
     lfoSyncSelector.setTooltip("Tempo Sync maps each LFO Rate control from fast beat divisions to slow bars using Tempo BPM.");
     lfoSyncSelector.onChange=[this]{engine.parameters.lfoSync.store(lfoSyncSelector.getSelectedId()-1);};
+    sampleLayerLabel.setText("Edit Layer", juce::dontSendNotification); sampleLayerLabel.setJustificationType(juce::Justification::centredRight);
+    sampleLayerLabel.setTooltip("Choose which of the four sample layers is shown in the detailed ADSR, tuning, delay, and pitch-LFO editor.");
+    for (int slot = 0; slot < 4; ++slot) sampleLayerSelector.addItem("Sample Layer " + juce::String(slot + 1), slot + 1);
+    sampleLayerSelector.setSelectedId(1, juce::dontSendNotification); sampleLayerSelector.setTooltip("Select a sample layer to edit its labeled detailed controls.");
+    sampleLayerSelector.onChange = [this] { showSampleLayer(sampleLayerSelector.getSelectedId() - 1); };
     sampleHeading.setText("SAMPLE IMPACT LAYERS — LOAD UP TO FOUR WAV/AIFF/MP3 FILES", juce::dontSendNotification); sampleHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(surface);
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
@@ -88,7 +93,6 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Sample Layer 4 level.", "Sample Layer 4 pitch: low to high.", "Sample Layer 4 ADSR attack.", "Sample Layer 4 ADSR decay.", "Sample Layer 4 ADSR sustain level.", "Sample Layer 4 final release/fade time.", "Sample Layer 4 delay after the metal hit.", "Sample Layer 4 pitch-LFO speed.", "Sample Layer 4 pitch-LFO amount."
     };
     std::atomic<float>* values[] = { &e.parameters.velocity,&e.parameters.variation,&e.parameters.brightness,&e.parameters.decay,&e.parameters.choke,&e.parameters.complexity,&e.parameters.shimmer,&e.parameters.noise,&e.parameters.subLevel,&e.parameters.subTune,&e.parameters.subDecay,&e.parameters.subDelay,&e.parameters.filterCutoff,&e.parameters.filterResonance,&e.parameters.modLfoRate,&e.parameters.modLfoDepth,&e.parameters.tempoBpm,&e.parameters.transient,&e.parameters.drive,&e.parameters.width,&e.parameters.limiter,&e.parameters.reverb,&e.parameters.gain };
-    constexpr int globalControlCount = 23;
     for (int i = 0; i < globalControlCount; ++i) {
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
@@ -101,7 +105,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     for (int slot = 0; slot < 4; ++slot) {
         std::atomic<float>* layerValues[] = { &e.parameters.sampleLevel[(size_t) slot], &e.parameters.sampleTune[(size_t) slot], &e.parameters.sampleAttack[(size_t) slot], &e.parameters.sampleDecay[(size_t) slot], &e.parameters.sampleSustain[(size_t) slot], &e.parameters.sampleRelease[(size_t) slot], &e.parameters.sampleDelay[(size_t) slot], &e.parameters.sampleLfoRate[(size_t) slot], &e.parameters.sampleLfoDepth[(size_t) slot] };
         for (int control = 0; control < 9; ++control) {
-            const auto index = globalControlCount + slot * 9 + control;
+            const auto index = globalControlCount + slot * sampleControlCount + control;
             auto* label = controlLabels.add(new juce::Label());
             label->setText(names[index], juce::dontSendNotification); label->setTooltip(help[index]); label->setJustificationType(juce::Justification::centred);
             auto* slider = sliders.add(new juce::Slider(names[index]));
@@ -111,6 +115,18 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
             addAndMakeVisible(label); addAndMakeVisible(slider);
         }
     }
+    showSampleLayer(0);
+}
+
+void MainEditor::showSampleLayer(int slot)
+{
+    selectedSampleLayer = juce::jlimit(0, 3, slot);
+    for (int index = globalControlCount; index < sliders.size(); ++index) {
+        const auto layer = (index - globalControlCount) / sampleControlCount;
+        const auto visible = layer == selectedSampleLayer;
+        sliders[index]->setVisible(visible); controlLabels[index]->setVisible(visible);
+    }
+    resized();
 }
 
 void MainEditor::resized()
@@ -118,10 +134,14 @@ void MainEditor::resized()
     auto b = getLocalBounds().reduced(14);
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(150).reduced(3));
-    auto controls = b.removeFromBottom(570); controlHeading.setBounds(controls.removeFromTop(22));
+    auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(110)); filterSelector.setBounds(selectors.removeFromLeft(155).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(80)); lfoSyncSelector.setBounds(selectors.removeFromLeft(120).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
-    surface.setBounds(b); auto rows=9, columns=7, slotWidth=controls.getWidth()/columns, slotHeight=controls.getHeight()/rows;
-    for (int i = 0; i < sliders.size(); ++i) { auto row=i/columns, column=i%columns; auto slot=juce::Rectangle<int>(controls.getX()+column*slotWidth,controls.getY()+row*slotHeight,slotWidth,slotHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
+    auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
+    auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
+    constexpr int globalColumns = 6, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
+    for (int i = 0; i < globalControlCount; ++i) { auto slot = juce::Rectangle<int>(controls.getX() + (i % globalColumns) * globalWidth, controls.getY() + (i / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
+    constexpr int layerColumns = 9; const auto layerWidth = layerControls.getWidth() / layerColumns;
+    for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + control * layerWidth, layerControls.getY(), layerWidth, layerControls.getHeight()).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }
 }
 }
