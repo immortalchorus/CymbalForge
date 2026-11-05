@@ -2,9 +2,9 @@
 
 namespace cymbalforge {
 namespace {
-std::array<std::atomic<float>*, 36> globalValues(CymbalParameters& p)
+std::array<std::atomic<float>*, 37> globalValues(CymbalParameters& p)
 {
-    return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.masterTune,&p.rattle,&p.pitchDrift,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
+    return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.masterTune,&p.rattle,&p.pitchDrift,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain,&p.velocityDecay };
 }
 
 std::array<std::atomic<float>*, 11> layerValues(CymbalParameters& p, int slot)
@@ -107,7 +107,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Master Tune (st)", "Impact Rattle", "Pitch Drift", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Master Tune (st)", "Impact Rattle", "Pitch Drift", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain", "Velocity → Decay",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Start", "Sample 1 Pan", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Start", "Sample 2 Pan", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Start", "Sample 3 Pan", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
@@ -138,6 +138,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Output ceiling. Lower values protect against unexpectedly hot layers.",
         "Room effect amount. Higher values add more simulated ambience.",
         "Final output level. Lower this control if the sound is too loud.",
+        "Makes harder hits ring longer than softer hits while keeping Metal Decay as the base duration.",
         "Sample Layer 1 level.", "Sample Layer 1 pitch: low to high.", "Sample Layer 1 start point within the loaded file.", "Sample Layer 1 stereo placement: left to right.", "Sample Layer 1 ADSR attack.", "Sample Layer 1 ADSR decay.", "Sample Layer 1 ADSR sustain level.", "Sample Layer 1 final release/fade time.", "Sample Layer 1 delay after the metal hit.", "Sample Layer 1 pitch-LFO speed.", "Sample Layer 1 pitch-LFO amount.",
         "Sample Layer 2 level.", "Sample Layer 2 pitch: low to high.", "Sample Layer 2 start point within the loaded file.", "Sample Layer 2 stereo placement: left to right.", "Sample Layer 2 ADSR attack.", "Sample Layer 2 ADSR decay.", "Sample Layer 2 ADSR sustain level.", "Sample Layer 2 final release/fade time.", "Sample Layer 2 delay after the metal hit.", "Sample Layer 2 pitch-LFO speed.", "Sample Layer 2 pitch-LFO amount.",
         "Sample Layer 3 level.", "Sample Layer 3 pitch: low to high.", "Sample Layer 3 start point within the loaded file.", "Sample Layer 3 stereo placement: left to right.", "Sample Layer 3 ADSR attack.", "Sample Layer 3 ADSR decay.", "Sample Layer 3 ADSR sustain level.", "Sample Layer 3 final release/fade time.", "Sample Layer 3 delay after the metal hit.", "Sample Layer 3 pitch-LFO speed.", "Sample Layer 3 pitch-LFO amount.",
