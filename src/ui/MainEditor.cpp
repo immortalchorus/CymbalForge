@@ -49,12 +49,15 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     for (int slot = 0; slot < 4; ++slot) sampleLayerSelector.addItem("Sample Layer " + juce::String(slot + 1), slot + 1);
     sampleLayerSelector.setSelectedId(1, juce::dontSendNotification); sampleLayerSelector.setTooltip("Select a sample layer to edit its labeled detailed controls.");
     sampleLayerSelector.onChange = [this] { showSampleLayer(sampleLayerSelector.getSelectedId() - 1); };
+    sampleLoopLabel.setText("Playback", juce::dontSendNotification); sampleLoopLabel.setJustificationType(juce::Justification::centredRight); sampleLoopLabel.setTooltip("Choose one-shot playback or a loop that sustains until MIDI note-off.");
+    sampleLoopSelector.addItem("One-shot", 1); sampleLoopSelector.addItem("Loop until Note-Off", 2); sampleLoopSelector.setSelectedId(1, juce::dontSendNotification); sampleLoopSelector.setTooltip("Loop is useful for sustained textures. MIDI Note-Off uses the sample layer Release control.");
+    sampleLoopSelector.onChange = [this] { engine.parameters.sampleLoop[(size_t) selectedSampleLayer].store(sampleLoopSelector.getSelectedId() - 1); };
     starterLabel.setText("Starter Sound", juce::dontSendNotification); starterLabel.setJustificationType(juce::Justification::centredRight);
     starterSelector.addItem("Choose a starting point…", 1); starterSelector.addItem("Short Metal Bar", 2); starterSelector.addItem("Trailer Impact", 3); starterSelector.addItem("Dark Ride", 4); starterSelector.addItem("Textural Swell", 5);
     starterSelector.setSelectedId(1, juce::dontSendNotification); starterSelector.setTooltip("Loads a useful starting configuration. It does not load or erase your audio files.");
     starterSelector.onChange = [this] { if (starterSelector.getSelectedId() > 1) applyStarterSound(starterSelector.getSelectedId()); };
     sampleHeading.setText("SAMPLE IMPACT LAYERS — LOAD UP TO FOUR WAV/AIFF/MP3 FILES", juce::dontSendNotification); sampleHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(sampleLoopLabel); addAndMakeVisible(sampleLoopSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
@@ -142,6 +145,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
 void MainEditor::showSampleLayer(int slot)
 {
     selectedSampleLayer = juce::jlimit(0, 3, slot);
+    sampleLoopSelector.setSelectedId(engine.parameters.sampleLoop[(size_t) selectedSampleLayer].load() + 1, juce::dontSendNotification);
     for (int index = globalControlCount; index < sliders.size(); ++index) {
         const auto layer = (index - globalControlCount) / sampleControlCount;
         const auto visible = layer == selectedSampleLayer;
@@ -159,6 +163,7 @@ void MainEditor::refreshFromEngine()
         for (int control = 0; control < sampleControlCount; ++control) sliders[globalControlCount + slot * sampleControlCount + control]->setValue(layer[control]->load(), juce::dontSendNotification);
     }
     modelSelector.setSelectedId(engine.parameters.model.load() + 1, juce::dontSendNotification); filterSelector.setSelectedId(engine.parameters.filterMode.load() + 1, juce::dontSendNotification); lfoSyncSelector.setSelectedId(engine.parameters.lfoSync.load() + 1, juce::dontSendNotification); modTargetSelector.setSelectedId(engine.parameters.modTarget.load() + 1, juce::dontSendNotification);
+    sampleLoopSelector.setSelectedId(engine.parameters.sampleLoop[(size_t) selectedSampleLayer].load() + 1, juce::dontSendNotification);
 }
 
 void MainEditor::applyStarterSound(int id)
@@ -180,7 +185,7 @@ void MainEditor::resized()
     auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(110)); filterSelector.setBounds(selectors.removeFromLeft(155).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(80)); lfoSyncSelector.setBounds(selectors.removeFromLeft(120).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(80)); modTargetSelector.setBounds(selectors.removeFromLeft(130).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
-    auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
+    auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2)); sampleLoopLabel.setBounds(layerBar.removeFromLeft(85)); sampleLoopSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
     constexpr int globalColumns = 7, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
     for (int i = 0; i < globalControlCount; ++i) { auto slot = juce::Rectangle<int>(controls.getX() + (i % globalColumns) * globalWidth, controls.getY() + (i / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }

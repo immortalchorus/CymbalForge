@@ -20,8 +20,8 @@ private:
     juce::OwnedArray<juce::Label> controlLabels;
     juce::OwnedArray<juce::TextButton> sampleLoadButtons;
     juce::Label title, status, controlHeading, modelLabel;
-    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, sampleLayerSelector, starterSelector;
-    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, sampleHeading, sampleLayerLabel, starterLabel;
+    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, sampleLayerSelector, sampleLoopSelector, starterSelector;
+    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, starterLabel;
     int selectedSampleLayer = 0;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"};
