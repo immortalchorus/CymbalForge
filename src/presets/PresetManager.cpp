@@ -35,6 +35,7 @@ bool PresetManager::save(const juce::File& file, const CymbalEngine& engine)
         object->setProperty(sampleKey(slot, "Attack"), parameters.sampleAttack[(size_t) slot].load()); object->setProperty(sampleKey(slot, "Decay"), parameters.sampleDecay[(size_t) slot].load()); object->setProperty(sampleKey(slot, "Sustain"), parameters.sampleSustain[(size_t) slot].load()); object->setProperty(sampleKey(slot, "Release"), parameters.sampleRelease[(size_t) slot].load());
         object->setProperty(sampleKey(slot, "Delay"), parameters.sampleDelay[(size_t) slot].load()); object->setProperty(sampleKey(slot, "LfoRate"), parameters.sampleLfoRate[(size_t) slot].load()); object->setProperty(sampleKey(slot, "LfoDepth"), parameters.sampleLfoDepth[(size_t) slot].load());
         object->setProperty(sampleKey(slot, "Loop"), parameters.sampleLoop[(size_t) slot].load());
+        object->setProperty(sampleKey(slot, "Reverse"), parameters.sampleReverse[(size_t) slot].load());
         object->setProperty(sampleKey(slot, "Path"), engine.sampleFile(slot).getFullPathName());
     }
     object->setProperty("modes", parameters.modes.load()); object->setProperty("voiceLimit", parameters.voiceLimit.load()); object->setProperty("model", parameters.model.load()); object->setProperty("filterMode", parameters.filterMode.load()); object->setProperty("modTarget", parameters.modTarget.load()); object->setProperty("lfoSync", parameters.lfoSync.load()); object->setProperty("exciter", parameters.exciter.load()); object->setProperty("midiPositionMap", parameters.midiPositionMap.load());
@@ -52,6 +53,7 @@ bool PresetManager::load(const juce::File& file, CymbalEngine& engine)
         auto get = [object, slot] (const char* suffix, std::atomic<float>& target) { const auto key = sampleKey(slot, suffix); if (object->hasProperty(key)) target.store(float(object->getProperty(key))); };
         get("Level", parameters.sampleLevel[(size_t) slot]); get("Tune", parameters.sampleTune[(size_t) slot]); get("Start", parameters.sampleStart[(size_t) slot]); get("Pan", parameters.samplePan[(size_t) slot]); get("Attack", parameters.sampleAttack[(size_t) slot]); get("Decay", parameters.sampleDecay[(size_t) slot]); get("Sustain", parameters.sampleSustain[(size_t) slot]); get("Release", parameters.sampleRelease[(size_t) slot]); get("Delay", parameters.sampleDelay[(size_t) slot]); get("LfoRate", parameters.sampleLfoRate[(size_t) slot]); get("LfoDepth", parameters.sampleLfoDepth[(size_t) slot]);
         const auto loopKey = sampleKey(slot, "Loop"); if (object->hasProperty(loopKey)) parameters.sampleLoop[(size_t) slot].store(int(object->getProperty(loopKey)));
+        const auto reverseKey = sampleKey(slot, "Reverse"); if (object->hasProperty(reverseKey)) parameters.sampleReverse[(size_t) slot].store(int(object->getProperty(reverseKey)));
         const auto path = object->getProperty(sampleKey(slot, "Path")).toString();
         if (path.isNotEmpty()) engine.loadSampleSlot(slot, juce::File(path)); else engine.clearSampleSlot(slot);
     }

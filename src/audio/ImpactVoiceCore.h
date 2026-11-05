@@ -11,7 +11,7 @@ struct ImpactControls {
     float subLevel = 0.0f, subTune = .35f, subDecay = .35f, subDelay=0, sub2Level=0, sub2Tune=.65f, sub2Decay=.2f, sub2Delay=0, filterCutoff = 1.0f, filterResonance = 0.0f, filterEnvAmount=0, filterEnvDecay=.25f;
     float modLfoRate=.25f, modLfoDepth=0, tempoBpm=120.0f; int modTarget=0, lfoSync=0, exciter=0;
     int filterMode = 0, modes = 384, model = 0;
-    struct SampleLayer { float level=0, tune=0.5f, start=0, pan=.5f, attack=0, decay=.3f, sustain=1.0f, release=.35f, delay=0, lfoRate=.25f, lfoDepth=0; bool loop=false; };
+    struct SampleLayer { float level=0, tune=0.5f, start=0, pan=.5f, attack=0, decay=.3f, sustain=1.0f, release=.35f, delay=0, lfoRate=.25f, lfoDepth=0; bool loop=false, reverse=false; };
     std::array<SampleLayer, 4> samples {};
 };
 
@@ -36,10 +36,11 @@ private:
     float filterLowL = 0, filterLowR = 0, filterBandL = 0, filterBandR = 0, filterCoefficient = 1, filterResonance = 0;
     DecayEnvelope filterEnvelope;
     enum class EnvelopeStage { attack, decay, sustain };
-    struct SampleVoice { std::shared_ptr<const ImpactSampleData> data; double position=0, increment=1; int delaySamples=0, releaseSamples=1; EnvelopeStage stage=EnvelopeStage::attack; float envelope=0, attackStep=1, decayCoefficient=.999f, releaseCoefficient=.999f, sustain=1, panL=.707f, panR=.707f, lfoSin=0, lfoCos=1, lfoStepSin=0, lfoStepCos=1, lfoDepth=0, level=0; bool active=false, released=false, loop=false; };
+    struct SampleVoice { std::shared_ptr<const ImpactSampleData> data; double position=0, increment=1; int delaySamples=0, releaseSamples=1; EnvelopeStage stage=EnvelopeStage::attack; float envelope=0, attackStep=1, decayCoefficient=.999f, releaseCoefficient=.999f, sustain=1, panL=.707f, panR=.707f, lfoSin=0, lfoCos=1, lfoStepSin=0, lfoStepCos=1, lfoDepth=0, level=0; bool active=false, released=false, loop=false, reverse=false; };
     std::array<std::shared_ptr<const ImpactSampleData>, 4> sampleData;
     std::array<SampleVoice, 4> sampleVoices;
     void configureSampleVoice(SampleVoice& voice, const ImpactControls::SampleLayer& layer, float velocity, float tempoBpm, bool lfoSync);
+    bool keepSampleInRange(SampleVoice& voice, int frames) noexcept;
     int filterMode = 0;
     float modSin=0, modCos=1, modStepSin=0, modStepCos=1, modDepth=0; int modTarget=0;
 };
