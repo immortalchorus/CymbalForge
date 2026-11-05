@@ -20,7 +20,7 @@ private:
     ModalBank modal;
     NoiseLayer noise;
     double rate = 48000.0;
-    float subPhase = 0, subEnvelope = 0, subDecayCoefficient = .999f;
+    float subSin = 0, subCos = 1, subStepSin = 0, subStepCos = 1, subEnvelope = 0, subDecayCoefficient = .999f;
     float filterStateL = 0, filterStateR = 0, filterCoefficient = 1, filterMix = 0;
     float subHz = 80.0f;
 };

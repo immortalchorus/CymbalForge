@@ -9,11 +9,12 @@ struct ModalBank {
     std::array<float, 2> process();
     bool active() const noexcept { return energy > 1.0e-7f; }
 private:
-    struct Mode { float a{}, b{}, z1{}, z2{}, attackGain{}, bloomGain{}, panL{}, panR{}, bloomRate{}; };
+    // bloom is a one-pole state: avoids an exp() for every mode, every sample.
+    struct Mode { float a{}, b{}, z1{}, z2{}, attackGain{}, bloomGain{}, panL{}, panR{}, bloom{}, bloomStep{}; };
     std::array<Mode, maxModes> modes{};
     juce::Random random { 0x43594D42 };
     int count = 256;
-    float energy = 0.0f, bloom = 0.0f;
+    float energy = 0.0f;
     double rate = 48000.0;
 };
 }

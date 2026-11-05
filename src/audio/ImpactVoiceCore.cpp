@@ -7,14 +7,17 @@ void ImpactVoiceCore::trigger (float velocity, float position, const ImpactContr
     subEnvelope = velocity * c.subLevel;
     subDecayCoefficient = std::exp(-1.0f / (float(rate) * (0.018f + 2.5f * c.subDecay)));
     subHz = 28.0f + 172.0f * c.subTune;
+    const auto phaseStep = juce::MathConstants<float>::twoPi * subHz / float(rate);
+    subStepSin = std::sin(phaseStep); subStepCos = std::cos(phaseStep);
+    subSin = 0.0f; subCos = 1.0f;
     filterCoefficient = .01f + .98f * c.filterCutoff;
     filterMix = c.filterMix;
 }
 std::array<float, 2> ImpactVoiceCore::render() {
     auto modalOutput = modal.process(); auto residual = noise.process();
-    auto sub = std::sin(subPhase) * subEnvelope;
-    subPhase += juce::MathConstants<float>::twoPi * subHz / float(rate);
-    if (subPhase > juce::MathConstants<float>::twoPi) subPhase -= juce::MathConstants<float>::twoPi;
+    auto sub = subSin * subEnvelope;
+    const auto nextSin = subSin * subStepCos + subCos * subStepSin;
+    subCos = subCos * subStepCos - subSin * subStepSin; subSin = nextSin;
     subEnvelope *= subDecayCoefficient;
     auto left = modalOutput[0] + residual[0] + sub, right = modalOutput[1] + residual[1] + sub;
     filterStateL += filterCoefficient * (left - filterStateL); filterStateR += filterCoefficient * (right - filterStateR);

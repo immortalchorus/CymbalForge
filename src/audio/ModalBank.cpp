@@ -31,15 +31,16 @@ void ModalBank::strike(float velocity, float position, float brightness, float d
         auto pan = (random.nextFloat() * 2.0f - 1.0f) * (0.25f + 0.7f * u);
         auto highBand = std::pow(u, 1.7f);
         auto amplitude = velocity * radiusWeight * spectralTilt / std::sqrt(float(count));
-        modes[i] = { 2.0f * r * std::cos(theta), -r * r, amplitude * std::sin(phase), amplitude * std::sin(phase - theta), 1.0f, 1.0f + velocity * shimmer * highBand * 2.6f, std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), 0.000015f + highBand * (0.00018f + shimmer * 0.00032f) };
+        const auto bloomSeconds = .10f + .32f * (1.0f - highBand);
+        const auto bloomStep = 1.0f - std::exp(-1.0f / (bloomSeconds * float(rate)));
+        modes[i] = { 2.0f * r * std::cos(theta), -r * r, amplitude * std::sin(phase), amplitude * std::sin(phase - theta), 1.0f, 1.0f + velocity * shimmer * highBand * 2.6f, std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), 0.0f, bloomStep };
     }
     for (int i = count; i < maxModes; ++i) modes[i] = {};
-    bloom = 0.0f; energy = velocity;
+    energy = velocity;
 }
 std::array<float, 2> ModalBank::process() {
-    bloom = juce::jmin(1.0f, bloom + 0.00004f);
     std::array<float, 2> output{};
-    for (int i = 0; i < count; ++i) { auto& m = modes[i]; auto y = m.a*m.z1 + m.b*m.z2; m.z2=m.z1; m.z1=y; auto modeBloom = 1.0f - std::exp(-bloom * m.bloomRate * 10000.0f); auto gain = m.attackGain + (m.bloomGain - m.attackGain) * modeBloom; output[0] += y*gain*m.panL; output[1] += y*gain*m.panR; }
+    for (int i = 0; i < count; ++i) { auto& m = modes[i]; auto y = m.a*m.z1 + m.b*m.z2; m.z2=m.z1; m.z1=y; m.bloom += m.bloomStep * (1.0f - m.bloom); auto gain = m.attackGain + (m.bloomGain - m.attackGain) * m.bloom; output[0] += y*gain*m.panL; output[1] += y*gain*m.panR; }
     energy *= 0.99986f; return { output[0] * 0.16f, output[1] * 0.16f };
 }
 }
