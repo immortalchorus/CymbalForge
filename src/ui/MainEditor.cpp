@@ -42,14 +42,14 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         presetChooser->launchAsync(juce::FileBrowserComponent::saveMode | juce::FileBrowserComponent::canSelectFiles | juce::FileBrowserComponent::warnAboutOverwriting, [this] (const juce::FileChooser& chooser) {
             auto file = chooser.getResult(); if (file == juce::File{}) return;
             if (! file.hasFileExtension("json")) file = file.withFileExtension("json");
-            status.setText(PresetManager::save(file, engine.parameters) ? "Preset saved: " + file.getFileName() : "Preset save failed", juce::dontSendNotification);
+            status.setText(PresetManager::save(file, engine) ? "Preset saved: " + file.getFileName() : "Preset save failed", juce::dontSendNotification);
         });
     };
     load.onClick = [this, presetDirectory] {
         presetChooser = std::make_unique<juce::FileChooser>("Load CymbalForge preset", presetDirectory, "*.json");
         presetChooser->launchAsync(juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles, [this] (const juce::FileChooser& chooser) {
             auto file = chooser.getResult(); if (file == juce::File{}) return;
-            auto loaded = PresetManager::load(file, engine.parameters); if (loaded) modelSelector.setSelectedId(engine.parameters.model.load()+1, juce::dontSendNotification);
+            auto loaded = PresetManager::load(file, engine); if (loaded) modelSelector.setSelectedId(engine.parameters.model.load()+1, juce::dontSendNotification);
             status.setText(loaded ? "Preset loaded: " + file.getFileName() : "Preset load failed: select a valid JSON preset", juce::dontSendNotification);
         });
     };

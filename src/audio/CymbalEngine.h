@@ -10,5 +10,5 @@ struct CymbalParameters {
     CymbalParameters() { for(int i=0;i<4;++i){ sampleLevel[(size_t)i]=0; sampleTune[(size_t)i]=.5f; sampleAttack[(size_t)i]=0; sampleRelease[(size_t)i]=.35f; sampleDelay[(size_t)i]=0; sampleLfoRate[(size_t)i]=.25f; sampleLfoDepth[(size_t)i]=0; } }
     ImpactControls snapshot() const noexcept;
 };
-class CymbalEngine { public: CymbalParameters parameters; void prepare(double rate, int block); void strike(float velocity, float position); void render(juce::AudioBuffer<float>& buffer, int start, int count); bool loadSampleSlot(int slot,const juce::File&); private: ImpactVoiceCore impact; juce::dsp::Reverb reverb; juce::AudioFormatManager formats; };
+class CymbalEngine { public: CymbalParameters parameters; void prepare(double rate, int block); void strike(float velocity, float position); void render(juce::AudioBuffer<float>& buffer, int start, int count); bool loadSampleSlot(int slot,const juce::File&); juce::File sampleFile(int slot) const; private: ImpactVoiceCore impact; juce::dsp::Reverb reverb; juce::AudioFormatManager formats; std::array<juce::File,4> sampleFiles; };
 }
