@@ -22,6 +22,7 @@ public:
     void prepare (double sampleRate);
     void trigger (float velocity, float position, const ImpactControls& controls);
     std::array<float, 2> render();
+    bool active() const noexcept;
     void setSample (int slot, std::shared_ptr<const ImpactSampleData> sample);
 private:
     ModalBank modal;

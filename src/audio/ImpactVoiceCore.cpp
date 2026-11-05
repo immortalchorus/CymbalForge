@@ -26,5 +26,6 @@ std::array<float, 2> ImpactVoiceCore::render() {
     const auto modulatedCoefficient=juce::jlimit(.002f,.995f,filterCoefficient+(modTarget==1?modulation*.25f:0)); if(modTarget==0){left*=1.0f+modulation;right*=1.0f+modulation;} filterLowL += modulatedCoefficient * (left - filterLowL + filterResonance * filterBandL); filterBandL += modulatedCoefficient * (filterLowL - filterBandL); filterLowR += modulatedCoefficient * (right - filterLowR + filterResonance * filterBandR); filterBandR += modulatedCoefficient * (filterLowR - filterBandR);
     if(filterMode==1) return {filterLowL,filterLowR}; if(filterMode==2) return {left-filterLowL,right-filterLowR}; if(filterMode==3) return {filterBandL,filterBandR}; return {left,right};
 }
+bool ImpactVoiceCore::active() const noexcept { if(modal.active() || subEnvelope>.00001f) return true; for(const auto& voice:sampleVoices) if(voice.active) return true; return false; }
 void ImpactVoiceCore::setSample (int slot, std::shared_ptr<const ImpactSampleData> sample) { if(juce::isPositiveAndBelow(slot,4)) std::atomic_store_explicit(&sampleData[(size_t)slot],std::move(sample),std::memory_order_release); }
 }
