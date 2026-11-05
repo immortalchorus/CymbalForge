@@ -15,8 +15,8 @@ private:
     juce::OwnedArray<juce::Label> controlLabels;
     juce::OwnedArray<juce::TextButton> sampleLoadButtons;
     juce::Label title, status, controlHeading, modelLabel;
-    juce::ComboBox modelSelector, filterSelector;
-    juce::Label filterLabel, sampleHeading;
+    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector;
+    juce::Label filterLabel, lfoSyncLabel, sampleHeading;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"};
 };
