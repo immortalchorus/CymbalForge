@@ -34,5 +34,32 @@ void CymbalEngine::setSampleSlot(int slot, std::shared_ptr<const ImpactSampleDat
 bool CymbalEngine::loadSampleSlot(int slot,const juce::File& file) { auto reader=std::unique_ptr<juce::AudioFormatReader>(formats.createReaderFor(file)); if(!reader || !juce::isPositiveAndBelow(slot,4)) return false; auto sample=std::make_shared<ImpactSampleData>(); sample->audio.setSize(juce::jmin(2,(int)reader->numChannels),int(reader->lengthInSamples)); reader->read(&sample->audio,0,sample->audio.getNumSamples(),0,true,true); sample->sampleRate=reader->sampleRate; setSampleSlot(slot,sample,file); return true; }
 void CymbalEngine::clearSampleSlot(int slot) { setSampleSlot(slot,{},{}); }
 juce::File CymbalEngine::sampleFile(int slot) const { return juce::isPositiveAndBelow(slot,4)?sampleFiles[(size_t)slot]:juce::File{}; }
-void CymbalEngine::render(juce::AudioBuffer<float>& buffer, int start, int count) { buffer.clear(start,count); auto gain=parameters.gain.load(),drive=parameters.drive.load(),transient=parameters.transient.load(),width=parameters.width.load(),limit=.25f+.74f*parameters.limiter.load(); for(int i=0;i<count;++i) { std::array<float,2> dry{}; for(auto& impact:impacts) if(impact.active()){auto voice=impact.render();dry[0]+=voice[0];dry[1]+=voice[1];} auto left=dry[0]+(dry[0]-previousL)*transient;auto right=dry[1]+(dry[1]-previousR)*transient;previousL=dry[0];previousR=dry[1]; auto mid=(left+right)*.5f,side=(left-right)*(.25f+width*.75f);left=mid+side;right=mid-side; if(drive>.0001f){auto amount=1.0f+drive*8.0f;left=std::tanh(left*amount)/amount;right=std::tanh(right*amount)/amount;} left=juce::jlimit(-limit,limit,left)*gain;right=juce::jlimit(-limit,limit,right)*gain; buffer.setSample(0,start+i,left); buffer.setSample(1,start+i,right); } juce::dsp::AudioBlock<float> b(buffer); auto sub=b.getSubBlock((size_t)start,(size_t)count); juce::dsp::ProcessContextReplacing<float> c(sub); juce::dsp::Reverb::Parameters p; p.wetLevel=parameters.reverb.load()*0.35f; p.dryLevel=1.0f; p.roomSize=.55f; reverb.setParameters(p); reverb.process(c); }
+void CymbalEngine::render(juce::AudioBuffer<float>& buffer, int start, int count)
+{
+    buffer.clear(start, count);
+    const auto reverbAmount = parameters.reverb.load();
+    if (reverbAmount != configuredReverb) {
+        juce::dsp::Reverb::Parameters p;
+        p.wetLevel = reverbAmount * .35f;
+        p.dryLevel = 1.0f;
+        p.roomSize = .55f;
+        reverb.setParameters(p);
+        configuredReverb = reverbAmount;
+    }
+    const auto gain = parameters.gain.load(), drive = parameters.drive.load(), transient = parameters.transient.load(), width = parameters.width.load(), limit = .25f + .74f * parameters.limiter.load();
+    for (int i = 0; i < count; ++i) {
+        std::array<float, 2> dry {};
+        for (auto& impact : impacts) if (impact.active()) { auto voice = impact.render(); dry[0] += voice[0]; dry[1] += voice[1]; }
+        auto left = dry[0] + (dry[0] - previousL) * transient, right = dry[1] + (dry[1] - previousR) * transient;
+        previousL = dry[0]; previousR = dry[1];
+        const auto mid = (left + right) * .5f, side = (left - right) * (.25f + width * .75f); left = mid + side; right = mid - side;
+        if (drive > .0001f) { const auto amount = 1.0f + drive * 8.0f; left = std::tanh(left * amount) / amount; right = std::tanh(right * amount) / amount; }
+        buffer.setSample(0, start + i, juce::jlimit(-limit, limit, left) * gain);
+        buffer.setSample(1, start + i, juce::jlimit(-limit, limit, right) * gain);
+    }
+    juce::dsp::AudioBlock<float> block(buffer);
+    auto subBlock = block.getSubBlock((size_t) start, (size_t) count);
+    juce::dsp::ProcessContextReplacing<float> context(subBlock);
+    reverb.process(context);
+}
 }
