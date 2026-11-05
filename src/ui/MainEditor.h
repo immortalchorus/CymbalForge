@@ -10,7 +10,7 @@ public:
     void resized() override;
 private:
     static constexpr int globalControlCount = 33;
-    static constexpr int sampleControlCount = 9;
+    static constexpr int sampleControlCount = 11;
     void showSampleLayer(int slot);
     void showGlobalPage(int page);
     void refreshFromEngine();

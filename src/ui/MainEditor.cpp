@@ -7,10 +7,10 @@ std::array<std::atomic<float>*, 33> globalValues(CymbalParameters& p)
     return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
 }
 
-std::array<std::atomic<float>*, 9> layerValues(CymbalParameters& p, int slot)
+std::array<std::atomic<float>*, 11> layerValues(CymbalParameters& p, int slot)
 {
     const auto index = (size_t) slot;
-    return { &p.sampleLevel[index],&p.sampleTune[index],&p.sampleAttack[index],&p.sampleDecay[index],&p.sampleSustain[index],&p.sampleRelease[index],&p.sampleDelay[index],&p.sampleLfoRate[index],&p.sampleLfoDepth[index] };
+    return { &p.sampleLevel[index],&p.sampleTune[index],&p.sampleStart[index],&p.samplePan[index],&p.sampleAttack[index],&p.sampleDecay[index],&p.sampleSustain[index],&p.sampleRelease[index],&p.sampleDelay[index],&p.sampleLfoRate[index],&p.sampleLfoDepth[index] };
 }
 }
 MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
@@ -98,10 +98,10 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
     const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
-        "Sample 1 Level", "Sample 1 Tune", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
-        "Sample 2 Level", "Sample 2 Tune", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
-        "Sample 3 Level", "Sample 3 Tune", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
-        "Sample 4 Level", "Sample 4 Tune", "Sample 4 Attack", "Sample 4 Decay", "Sample 4 Sustain", "Sample 4 Release", "Sample 4 Delay", "Sample 4 LFO Rate", "Sample 4 LFO Depth" };
+        "Sample 1 Level", "Sample 1 Tune", "Sample 1 Start", "Sample 1 Pan", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
+        "Sample 2 Level", "Sample 2 Tune", "Sample 2 Start", "Sample 2 Pan", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
+        "Sample 3 Level", "Sample 3 Tune", "Sample 3 Start", "Sample 3 Pan", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
+        "Sample 4 Level", "Sample 4 Tune", "Sample 4 Start", "Sample 4 Pan", "Sample 4 Attack", "Sample 4 Decay", "Sample 4 Sustain", "Sample 4 Release", "Sample 4 Delay", "Sample 4 LFO Rate", "Sample 4 LFO Depth" };
     const char* help[] = {
         "Strike strength. Higher values create a louder, harder hit.",
         "Changes velocity and strike position slightly on each hit for more natural repeated impacts.",
@@ -125,10 +125,10 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Output ceiling. Lower values protect against unexpectedly hot layers.",
         "Room effect amount. Higher values add more simulated ambience.",
         "Final output level. Lower this control if the sound is too loud.",
-        "Sample Layer 1 level.", "Sample Layer 1 pitch: low to high.", "Sample Layer 1 ADSR attack.", "Sample Layer 1 ADSR decay.", "Sample Layer 1 ADSR sustain level.", "Sample Layer 1 final release/fade time.", "Sample Layer 1 delay after the metal hit.", "Sample Layer 1 pitch-LFO speed.", "Sample Layer 1 pitch-LFO amount.",
-        "Sample Layer 2 level.", "Sample Layer 2 pitch: low to high.", "Sample Layer 2 ADSR attack.", "Sample Layer 2 ADSR decay.", "Sample Layer 2 ADSR sustain level.", "Sample Layer 2 final release/fade time.", "Sample Layer 2 delay after the metal hit.", "Sample Layer 2 pitch-LFO speed.", "Sample Layer 2 pitch-LFO amount.",
-        "Sample Layer 3 level.", "Sample Layer 3 pitch: low to high.", "Sample Layer 3 ADSR attack.", "Sample Layer 3 ADSR decay.", "Sample Layer 3 ADSR sustain level.", "Sample Layer 3 final release/fade time.", "Sample Layer 3 delay after the metal hit.", "Sample Layer 3 pitch-LFO speed.", "Sample Layer 3 pitch-LFO amount.",
-        "Sample Layer 4 level.", "Sample Layer 4 pitch: low to high.", "Sample Layer 4 ADSR attack.", "Sample Layer 4 ADSR decay.", "Sample Layer 4 ADSR sustain level.", "Sample Layer 4 final release/fade time.", "Sample Layer 4 delay after the metal hit.", "Sample Layer 4 pitch-LFO speed.", "Sample Layer 4 pitch-LFO amount."
+        "Sample Layer 1 level.", "Sample Layer 1 pitch: low to high.", "Sample Layer 1 start point within the loaded file.", "Sample Layer 1 stereo placement: left to right.", "Sample Layer 1 ADSR attack.", "Sample Layer 1 ADSR decay.", "Sample Layer 1 ADSR sustain level.", "Sample Layer 1 final release/fade time.", "Sample Layer 1 delay after the metal hit.", "Sample Layer 1 pitch-LFO speed.", "Sample Layer 1 pitch-LFO amount.",
+        "Sample Layer 2 level.", "Sample Layer 2 pitch: low to high.", "Sample Layer 2 start point within the loaded file.", "Sample Layer 2 stereo placement: left to right.", "Sample Layer 2 ADSR attack.", "Sample Layer 2 ADSR decay.", "Sample Layer 2 ADSR sustain level.", "Sample Layer 2 final release/fade time.", "Sample Layer 2 delay after the metal hit.", "Sample Layer 2 pitch-LFO speed.", "Sample Layer 2 pitch-LFO amount.",
+        "Sample Layer 3 level.", "Sample Layer 3 pitch: low to high.", "Sample Layer 3 start point within the loaded file.", "Sample Layer 3 stereo placement: left to right.", "Sample Layer 3 ADSR attack.", "Sample Layer 3 ADSR decay.", "Sample Layer 3 ADSR sustain level.", "Sample Layer 3 final release/fade time.", "Sample Layer 3 delay after the metal hit.", "Sample Layer 3 pitch-LFO speed.", "Sample Layer 3 pitch-LFO amount.",
+        "Sample Layer 4 level.", "Sample Layer 4 pitch: low to high.", "Sample Layer 4 start point within the loaded file.", "Sample Layer 4 stereo placement: left to right.", "Sample Layer 4 ADSR attack.", "Sample Layer 4 ADSR decay.", "Sample Layer 4 ADSR sustain level.", "Sample Layer 4 final release/fade time.", "Sample Layer 4 delay after the metal hit.", "Sample Layer 4 pitch-LFO speed.", "Sample Layer 4 pitch-LFO amount."
     };
     const auto values = globalValues(e.parameters);
     for (int i = 0; i < globalControlCount; ++i) {
@@ -142,7 +142,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     }
     for (int slot = 0; slot < 4; ++slot) {
         const auto layer = layerValues(e.parameters, slot);
-        for (int control = 0; control < 9; ++control) {
+        for (int control = 0; control < sampleControlCount; ++control) {
             const auto index = globalControlCount + slot * sampleControlCount + control;
             auto* label = controlLabels.add(new juce::Label());
             label->setText(names[index], juce::dontSendNotification); label->setTooltip(help[index]); label->setJustificationType(juce::Justification::centred);
@@ -216,7 +216,7 @@ void MainEditor::resized()
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
     const int first[] { 0, 12, 24 }, last[] { 12, 24, globalControlCount }; constexpr int globalColumns = 4; const auto globalCount = last[selectedGlobalPage] - first[selectedGlobalPage], globalRows = (globalCount + globalColumns - 1) / globalColumns; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
     for (int i = first[selectedGlobalPage], shown = 0; i < last[selectedGlobalPage]; ++i, ++shown) { auto slot = juce::Rectangle<int>(controls.getX() + (shown % globalColumns) * globalWidth, controls.getY() + (shown / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
-    constexpr int layerColumns = 9; const auto layerWidth = layerControls.getWidth() / layerColumns;
-    for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + control * layerWidth, layerControls.getY(), layerWidth, layerControls.getHeight()).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }
+    constexpr int layerColumns = 6; const auto layerWidth = layerControls.getWidth() / layerColumns, layerHeight = layerControls.getHeight() / 2;
+    for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + (control % layerColumns) * layerWidth, layerControls.getY() + (control / layerColumns) * layerHeight, layerWidth, layerHeight).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }
 }
 }
