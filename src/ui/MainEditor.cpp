@@ -150,7 +150,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
         auto* slider = sliders.add(new juce::Slider(names[i]));
         slider->setName(names[i]); slider->setTooltip(help[i]); const auto specialRange = i == 26 || i == 27; slider->setRange(i == 26 ? 40.0 : (i == 27 ? -24.0 : 0.0), i == 26 ? 240.0 : (i == 27 ? 24.0 : 1.0), specialRange ? 1.0 : .001); slider->setValue(values[i]->load());
-        slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 64, 20);
+        slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 76, 24);
         slider->onValueChange = [slider, value = values[i]] { value->store((float) slider->getValue()); };
         addAndMakeVisible(label); addAndMakeVisible(slider);
     }
@@ -162,7 +162,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
             label->setText(names[index], juce::dontSendNotification); label->setTooltip(help[index]); label->setJustificationType(juce::Justification::centred);
             auto* slider = sliders.add(new juce::Slider(names[index]));
             slider->setName(names[index]); slider->setTooltip(help[index]); slider->setRange(0, 1, .001); slider->setValue(layer[control]->load());
-            slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 64, 20);
+            slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 76, 24);
             slider->onValueChange = [slider, value = layer[control]] { value->store((float) slider->getValue()); };
             addAndMakeVisible(label); addAndMakeVisible(slider);
         }
@@ -224,7 +224,7 @@ void MainEditor::resized()
     auto b = getLocalBounds().reduced(14);
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(108).reduced(3)); starterLabel.setBounds(actions.removeFromLeft(70)); starterSelector.setBounds(actions.removeFromLeft(175).reduced(2)); midiPositionLabel.setBounds(actions.removeFromLeft(75)); midiPositionSelector.setBounds(actions.removeFromLeft(175).reduced(2));
-    auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
+    auto controls = b.removeFromBottom(juce::jlimit(430, 620, b.getHeight() - 72)); controlHeading.setBounds(controls.removeFromTop(22));
     auto pageBar = controls.removeFromTop(28); globalPageLabel.setBounds(pageBar.removeFromLeft(110)); globalPageSelector.setBounds(pageBar.removeFromLeft(210).reduced(2));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(80)); filterSelector.setBounds(selectors.removeFromLeft(110).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(65)); lfoSyncSelector.setBounds(selectors.removeFromLeft(95).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(65)); modTargetSelector.setBounds(selectors.removeFromLeft(95).reduced(2)); exciterLabel.setBounds(selectors.removeFromLeft(50)); exciterSelector.setBounds(selectors.removeFromLeft(85).reduced(2)); qualityLabel.setBounds(selectors.removeFromLeft(55)); qualitySelector.setBounds(selectors.removeFromLeft(105).reduced(2)); midiTuneLabel.setBounds(selectors.removeFromLeft(65)); midiTuneSelector.setBounds(selectors.reduced(2));
     sampleHeading.setBounds(controls.removeFromTop(18));
