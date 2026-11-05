@@ -9,7 +9,7 @@ public:
     explicit MainEditor(CymbalEngine&);
     void resized() override;
 private:
-    static constexpr int globalControlCount = 29;
+    static constexpr int globalControlCount = 32;
     static constexpr int sampleControlCount = 9;
     void showSampleLayer(int slot);
     void refreshFromEngine();
