@@ -20,7 +20,7 @@ struct ImpactSampleData { juce::AudioBuffer<float> audio; double sampleRate=4800
 class ImpactVoiceCore {
 public:
     void prepare (double sampleRate);
-    void trigger (float velocity, float position, const ImpactControls& controls);
+    void trigger (float velocity, float position, const ImpactControls& controls, int onsetDelaySamples = 0);
     void release() noexcept;
     std::array<float, 2> render();
     bool active() const noexcept;
@@ -43,5 +43,6 @@ private:
     bool keepSampleInRange(SampleVoice& voice, int frames) noexcept;
     int filterMode = 0;
     float modSin=0, modCos=1, modStepSin=0, modStepCos=1, modDepth=0; int modTarget=0;
+    int onsetDelaySamples = 0;
 };
 }

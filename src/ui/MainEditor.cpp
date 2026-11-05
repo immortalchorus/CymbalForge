@@ -2,9 +2,9 @@
 
 namespace cymbalforge {
 namespace {
-std::array<std::atomic<float>*, 34> globalValues(CymbalParameters& p)
+std::array<std::atomic<float>*, 35> globalValues(CymbalParameters& p)
 {
-    return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.masterTune,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
+    return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.masterTune,&p.rattle,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
 }
 
 std::array<std::atomic<float>*, 11> layerValues(CymbalParameters& p, int slot)
@@ -107,7 +107,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Master Tune (st)", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Master Tune (st)", "Impact Rattle", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Start", "Sample 1 Pan", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Start", "Sample 2 Pan", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Start", "Sample 3 Pan", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
@@ -130,6 +130,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Shared filter frequency.", "Shared filter feedback/resonance.", "Opening filter envelope amount at the start of every impact.", "Time for the filter envelope to return to the Filter Cutoff setting.", "Tempo-ready modulation LFO speed.", "Global LFO depth; routes to amplitude by default.",
         "Tempo used only while LFO Clock is set to Tempo Sync.",
         "Tunes the complete impact in semitones: modal metal, both subs, and all sample layers move together while their relative tuning remains intact.",
+        "Creates up to four rapid, decaying micro-strikes. Use at higher Quality settings for chain, rattle, and layered trailer impacts.",
         "Emphasizes the first edge of the hit for sharper film-impact attacks.",
         "Soft saturation after the impact mix. Use for denser, more aggressive hits.",
         "Stereo spread after the impact mix. Low is focused; high is wide.",
