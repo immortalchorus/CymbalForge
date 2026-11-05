@@ -3,7 +3,7 @@
 namespace cymbalforge {
 void ModalBank::prepare(double sampleRate) { rate = sampleRate; for (auto& m : modes) m = {}; }
 void ModalBank::strike(const Excitation& excitation) {
-    const auto [velocity, position, brightness, decay, complexity, shimmer, swell, model, requestedModes] = excitation;
+    const auto [velocity, position, brightness, decay, complexity, shimmer, swell, masterTune, model, requestedModes] = excitation;
     // A cymbal is a dense irregular mode field, not a fundamental with harmonics.
     count = juce::jlimit(64, maxModes, juce::jmax(requestedModes, 128 + int(complexity * float(maxModes - 128))));
     const auto hitRadius = juce::jlimit(0.05f, 0.98f, position);
@@ -15,7 +15,8 @@ void ModalBank::strike(const Excitation& excitation) {
     const float decayByModel[] { 1.0f, 1.35f, 0.72f };
     const float distributionByModel[] { 0.74f, 0.90f, 0.63f };
     const auto nyquistGuard = float(rate * topFrequencyByModel[modelIndex]);
-    const auto lowFrequency = lowFrequencyByModel[modelIndex] + 105.0f * (1.0f - brightness);
+    const auto pitchRatio = std::pow(2.0f, masterTune / 12.0f);
+    const auto lowFrequency = (lowFrequencyByModel[modelIndex] + 105.0f * (1.0f - brightness)) * pitchRatio;
     for (int i = 0; i < count; ++i) {
         const auto u = (float(i) + random.nextFloat()) / float(count);
         auto f = lowFrequency * std::exp(std::log(nyquistGuard / lowFrequency) * std::pow(u, distributionByModel[modelIndex]));

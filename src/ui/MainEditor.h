@@ -9,7 +9,7 @@ public:
     explicit MainEditor(CymbalEngine&);
     void resized() override;
 private:
-    static constexpr int globalControlCount = 33;
+    static constexpr int globalControlCount = 34;
     static constexpr int sampleControlCount = 11;
     void showSampleLayer(int slot);
     void showGlobalPage(int page);
@@ -21,8 +21,8 @@ private:
     juce::OwnedArray<juce::Label> controlLabels;
     juce::OwnedArray<juce::TextButton> sampleLoadButtons;
     juce::Label title, status, controlHeading, modelLabel;
-    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, exciterSelector, qualitySelector, midiPositionSelector, globalPageSelector, sampleLayerSelector, sampleLoopSelector, sampleDirectionSelector, starterSelector;
-    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, exciterLabel, qualityLabel, midiPositionLabel, globalPageLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, sampleDirectionLabel, starterLabel;
+    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, exciterSelector, qualitySelector, midiPositionSelector, midiTuneSelector, globalPageSelector, sampleLayerSelector, sampleLoopSelector, sampleDirectionSelector, starterSelector;
+    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, exciterLabel, qualityLabel, midiPositionLabel, midiTuneLabel, globalPageLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, sampleDirectionLabel, starterLabel;
     int selectedSampleLayer = 0, selectedGlobalPage = 0;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"}, clearLayer{"Clear Selected Layer"};

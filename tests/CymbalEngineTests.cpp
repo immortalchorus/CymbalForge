@@ -61,16 +61,16 @@ bool testSampleLoopAndRelease()
 bool testPresetRoundTrip()
 {
     cymbalforge::CymbalEngine source, restored;
-    source.parameters.velocityTone = .33f; source.parameters.swell = .61f; source.parameters.noiseDecay = .72f; source.parameters.sub2Level = .48f;
+    source.parameters.velocityTone = .33f; source.parameters.masterTune = -7.0f; source.parameters.swell = .61f; source.parameters.noiseDecay = .72f; source.parameters.sub2Level = .48f;
     source.parameters.filterEnvAmount = .63f; source.parameters.filterEnvDecay = .27f; source.parameters.exciter = 3;
-    source.parameters.voiceLimit = 3; source.parameters.midiPositionMap = 1;
+    source.parameters.voiceLimit = 3; source.parameters.midiPositionMap = 1; source.parameters.midiTuneMap = 1;
     source.parameters.sampleLoop[2] = 1; source.parameters.sampleReverse[2] = 1; source.parameters.sampleStart[2] = .27f; source.parameters.samplePan[2] = .18f; source.parameters.sampleRelease[2] = .42f;
     const auto file = juce::File::getSpecialLocation(juce::File::tempDirectory).getChildFile("cymbalforge-preset-regression.json");
     const auto saved = cymbalforge::PresetManager::save(file, source);
     const auto loaded = saved && cymbalforge::PresetManager::load(file, restored);
     file.deleteFile();
     const auto same = [] (float a, float b) { return std::abs(a - b) < .0001f; };
-    if (! loaded || ! same(restored.parameters.velocityTone.load(), .33f) || ! same(restored.parameters.swell.load(), .61f) || ! same(restored.parameters.noiseDecay.load(), .72f) || ! same(restored.parameters.sub2Level.load(), .48f) || ! same(restored.parameters.filterEnvAmount.load(), .63f) || restored.parameters.exciter.load() != 3 || restored.parameters.voiceLimit.load() != 3 || restored.parameters.midiPositionMap.load() != 1 || restored.parameters.sampleLoop[2].load() != 1 || restored.parameters.sampleReverse[2].load() != 1 || ! same(restored.parameters.sampleStart[2].load(), .27f) || ! same(restored.parameters.samplePan[2].load(), .18f) || ! same(restored.parameters.sampleRelease[2].load(), .42f)) { std::cerr << "Preset round-trip lost impact controls\n"; return false; }
+    if (! loaded || ! same(restored.parameters.velocityTone.load(), .33f) || ! same(restored.parameters.masterTune.load(), -7.0f) || ! same(restored.parameters.swell.load(), .61f) || ! same(restored.parameters.noiseDecay.load(), .72f) || ! same(restored.parameters.sub2Level.load(), .48f) || ! same(restored.parameters.filterEnvAmount.load(), .63f) || restored.parameters.exciter.load() != 3 || restored.parameters.voiceLimit.load() != 3 || restored.parameters.midiPositionMap.load() != 1 || restored.parameters.midiTuneMap.load() != 1 || restored.parameters.sampleLoop[2].load() != 1 || restored.parameters.sampleReverse[2].load() != 1 || ! same(restored.parameters.sampleStart[2].load(), .27f) || ! same(restored.parameters.samplePan[2].load(), .18f) || ! same(restored.parameters.sampleRelease[2].load(), .42f)) { std::cerr << "Preset round-trip lost impact controls\n"; return false; }
     return true;
 }
 }

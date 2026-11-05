@@ -4,7 +4,7 @@
 namespace cymbalforge {
 struct ModalBank {
     static constexpr int maxModes = 768;
-    struct Excitation { float velocity, position, brightness, decay, complexity, shimmer, swell; int model, requestedModes; };
+    struct Excitation { float velocity, position, brightness, decay, complexity, shimmer, swell, masterTune; int model, requestedModes; };
     void prepare(double sampleRate);
     void strike(const Excitation& excitation);
     std::array<float, 2> process();
