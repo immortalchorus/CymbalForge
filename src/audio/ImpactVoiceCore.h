@@ -31,10 +31,10 @@ private:
     float subSin = 0, subCos = 1, subStepSin = 0, subStepCos = 1, subEnvelope = 0, subDecayCoefficient = .999f;
     float filterLowL = 0, filterLowR = 0, filterBandL = 0, filterBandR = 0, filterCoefficient = 1, filterResonance = 0;
     float subHz = 80.0f;
-    struct SampleVoice { std::shared_ptr<const ImpactSampleData> data; double position=0, increment=1; int delaySamples=0, releaseSamples=1, stage=0; float envelope=0, attackStep=1, decayCoefficient=.999f, sustain=1, lfoPhase=0, lfoStep=0, lfoDepth=0, level=0; bool active=false; };
+    struct SampleVoice { std::shared_ptr<const ImpactSampleData> data; double position=0, increment=1; int delaySamples=0, releaseSamples=1, stage=0; float envelope=0, attackStep=1, decayCoefficient=.999f, sustain=1, lfoSin=0, lfoCos=1, lfoStepSin=0, lfoStepCos=1, lfoDepth=0, level=0; bool active=false; };
     std::array<std::shared_ptr<const ImpactSampleData>, 4> sampleData;
     std::array<SampleVoice, 4> sampleVoices;
     int filterMode = 0;
-    int subDelaySamples=0; float modPhase=0, modStep=0, modDepth=0; int modTarget=0;
+    int subDelaySamples=0; float modSin=0, modCos=1, modStepSin=0, modStepCos=1, modDepth=0; int modTarget=0;
 };
 }
