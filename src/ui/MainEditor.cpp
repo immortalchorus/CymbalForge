@@ -2,9 +2,9 @@
 
 namespace cymbalforge {
 namespace {
-std::array<std::atomic<float>*, 32> globalValues(CymbalParameters& p)
+std::array<std::atomic<float>*, 33> globalValues(CymbalParameters& p)
 {
-    return { &p.velocity,&p.variation,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
+    return { &p.velocity,&p.variation,&p.velocityTone,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.swell,&p.noise,&p.noiseTone,&p.noiseDecay,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.filterEnvAmount,&p.filterEnvDecay,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
 }
 
 std::array<std::atomic<float>*, 9> layerValues(CymbalParameters& p, int slot)
@@ -47,6 +47,9 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     exciterLabel.setText("Exciter", juce::dontSendNotification); exciterLabel.setJustificationType(juce::Justification::centredRight); exciterLabel.setTooltip("Choose how the metal is excited: a stick transient, softer mallet, brush wash, or bowed swell.");
     exciterSelector.addItem("Stick", 1); exciterSelector.addItem("Mallet", 2); exciterSelector.addItem("Brush", 3); exciterSelector.addItem("Bow", 4); exciterSelector.setSelectedId(e.parameters.exciter.load() + 1, juce::dontSendNotification);
     exciterSelector.setTooltip("Exciter changes the contact-versus-wash balance at the synthesis source."); exciterSelector.onChange=[this]{engine.parameters.exciter.store(exciterSelector.getSelectedId()-1);};
+    midiPositionLabel.setText("MIDI Position", juce::dontSendNotification); midiPositionLabel.setJustificationType(juce::Justification::centredRight); midiPositionLabel.setTooltip("Choose fixed strike position or map MIDI note number from bell to edge.");
+    midiPositionSelector.addItem("Fixed", 1); midiPositionSelector.addItem("Note → Bell/Edge", 2); midiPositionSelector.setSelectedId(e.parameters.midiPositionMap.load()+1, juce::dontSendNotification);
+    midiPositionSelector.setTooltip("Note mapping turns MIDI pitch into strike position from bell through edge."); midiPositionSelector.onChange=[this]{engine.parameters.midiPositionMap.store(midiPositionSelector.getSelectedId()-1);};
     sampleLayerLabel.setText("Edit Layer", juce::dontSendNotification); sampleLayerLabel.setJustificationType(juce::Justification::centredRight);
     sampleLayerLabel.setTooltip("Choose which of the four sample layers is shown in the detailed ADSR, tuning, delay, and pitch-LFO editor.");
     for (int slot = 0; slot < 4; ++slot) sampleLayerSelector.addItem("Sample Layer " + juce::String(slot + 1), slot + 1);
@@ -60,7 +63,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     starterSelector.setSelectedId(1, juce::dontSendNotification); starterSelector.setTooltip("Loads a useful starting configuration. It does not load or erase your audio files.");
     starterSelector.onChange = [this] { if (starterSelector.getSelectedId() > 1) applyStarterSound(starterSelector.getSelectedId()); };
     sampleHeading.setText("SAMPLE IMPACT LAYERS — LOAD UP TO FOUR WAV/AIFF/MP3 FILES", juce::dontSendNotification); sampleHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(exciterLabel); addAndMakeVisible(exciterSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(sampleLoopLabel); addAndMakeVisible(sampleLoopSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(exciterLabel); addAndMakeVisible(exciterSelector); addAndMakeVisible(midiPositionLabel); addAndMakeVisible(midiPositionSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(sampleLoopLabel); addAndMakeVisible(sampleLoopSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
@@ -91,7 +94,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Velocity Tone", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Metal Swell", "Noise", "Noise Colour", "Noise Decay", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Filter Env Amount", "Filter Env Decay", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
@@ -99,6 +102,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     const char* help[] = {
         "Strike strength. Higher values create a louder, harder hit.",
         "Changes velocity and strike position slightly on each hit for more natural repeated impacts.",
+        "How much playing velocity brightens or darkens the modal and noise response.",
         "Spectral brightness. Higher values emphasize higher cymbal partials.",
         "Metal ring time. The lowest value is a very short metallic impact.",
         "Damps metal modes immediately. Higher values create tight bars, mutes, and impacts.",
@@ -128,7 +132,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
         auto* slider = sliders.add(new juce::Slider(names[i]));
-        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 25 ? 40.0 : 0.0, i == 25 ? 240.0 : 1.0, i == 25 ? 1.0 : .001); slider->setValue(values[i]->load());
+        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 26 ? 40.0 : 0.0, i == 26 ? 240.0 : 1.0, i == 26 ? 1.0 : .001); slider->setValue(values[i]->load());
         slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 64, 20);
         slider->onValueChange = [slider, value = values[i]] { value->store((float) slider->getValue()); };
         addAndMakeVisible(label); addAndMakeVisible(slider);
@@ -169,7 +173,7 @@ void MainEditor::refreshFromEngine()
         const auto layer = layerValues(engine.parameters, slot);
         for (int control = 0; control < sampleControlCount; ++control) sliders[globalControlCount + slot * sampleControlCount + control]->setValue(layer[control]->load(), juce::dontSendNotification);
     }
-    modelSelector.setSelectedId(engine.parameters.model.load() + 1, juce::dontSendNotification); filterSelector.setSelectedId(engine.parameters.filterMode.load() + 1, juce::dontSendNotification); lfoSyncSelector.setSelectedId(engine.parameters.lfoSync.load() + 1, juce::dontSendNotification); modTargetSelector.setSelectedId(engine.parameters.modTarget.load() + 1, juce::dontSendNotification); exciterSelector.setSelectedId(engine.parameters.exciter.load() + 1, juce::dontSendNotification);
+    modelSelector.setSelectedId(engine.parameters.model.load() + 1, juce::dontSendNotification); filterSelector.setSelectedId(engine.parameters.filterMode.load() + 1, juce::dontSendNotification); lfoSyncSelector.setSelectedId(engine.parameters.lfoSync.load() + 1, juce::dontSendNotification); modTargetSelector.setSelectedId(engine.parameters.modTarget.load() + 1, juce::dontSendNotification); exciterSelector.setSelectedId(engine.parameters.exciter.load() + 1, juce::dontSendNotification); midiPositionSelector.setSelectedId(engine.parameters.midiPositionMap.load()+1, juce::dontSendNotification);
     sampleLoopSelector.setSelectedId(engine.parameters.sampleLoop[(size_t) selectedSampleLayer].load() + 1, juce::dontSendNotification);
 }
 
@@ -188,13 +192,13 @@ void MainEditor::resized()
 {
     auto b = getLocalBounds().reduced(14);
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
-    auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(140).reduced(3)); starterLabel.setBounds(actions.removeFromLeft(95)); starterSelector.setBounds(actions.removeFromLeft(230).reduced(2));
+    auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(108).reduced(3)); starterLabel.setBounds(actions.removeFromLeft(70)); starterSelector.setBounds(actions.removeFromLeft(175).reduced(2)); midiPositionLabel.setBounds(actions.removeFromLeft(75)); midiPositionSelector.setBounds(actions.removeFromLeft(175).reduced(2));
     auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(100)); filterSelector.setBounds(selectors.removeFromLeft(135).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(70)); lfoSyncSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(72)); modTargetSelector.setBounds(selectors.removeFromLeft(110).reduced(2)); exciterLabel.setBounds(selectors.removeFromLeft(55)); exciterSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2)); clearLayer.setBounds(loads.removeFromLeft(165).reduced(2)); addAndMakeVisible(clearLayer);
     auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2)); sampleLoopLabel.setBounds(layerBar.removeFromLeft(85)); sampleLoopSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
-    constexpr int globalColumns = 8, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
+    constexpr int globalColumns = 9, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
     for (int i = 0; i < globalControlCount; ++i) { auto slot = juce::Rectangle<int>(controls.getX() + (i % globalColumns) * globalWidth, controls.getY() + (i / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
     constexpr int layerColumns = 9; const auto layerWidth = layerControls.getWidth() / layerColumns;
     for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + control * layerWidth, layerControls.getY(), layerWidth, layerControls.getHeight()).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }

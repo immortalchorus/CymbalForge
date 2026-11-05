@@ -9,7 +9,7 @@ public:
     explicit MainEditor(CymbalEngine&);
     void resized() override;
 private:
-    static constexpr int globalControlCount = 32;
+    static constexpr int globalControlCount = 33;
     static constexpr int sampleControlCount = 9;
     void showSampleLayer(int slot);
     void refreshFromEngine();
@@ -20,8 +20,8 @@ private:
     juce::OwnedArray<juce::Label> controlLabels;
     juce::OwnedArray<juce::TextButton> sampleLoadButtons;
     juce::Label title, status, controlHeading, modelLabel;
-    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, exciterSelector, sampleLayerSelector, sampleLoopSelector, starterSelector;
-    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, exciterLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, starterLabel;
+    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, exciterSelector, midiPositionSelector, sampleLayerSelector, sampleLoopSelector, starterSelector;
+    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, exciterLabel, midiPositionLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, starterLabel;
     int selectedSampleLayer = 0;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"}, clearLayer{"Clear Selected Layer"};
