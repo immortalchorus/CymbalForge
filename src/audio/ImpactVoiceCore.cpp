@@ -11,7 +11,7 @@ float lfoFrequency(float normalizedRate, float tempoBpm, bool synced) noexcept
 void ImpactVoiceCore::prepare (double sampleRate) { rate = sampleRate; modal.prepare(rate); noise.prepare(rate); }
 void ImpactVoiceCore::trigger (float velocity, float position, const ImpactControls& c) {
     modal.strike(velocity, position, c.brightness, c.decay * (1.0f - c.choke), c.complexity, c.shimmer, c.model, c.modes);
-    noise.strike(velocity, c.brightness, c.noise, c.shimmer, c.model);
+    noise.strike(velocity, c.brightness, c.noise, c.noiseTone, c.shimmer, c.model);
     subEnvelope = velocity * c.subLevel;
     subDecayCoefficient = std::exp(-1.0f / (float(rate) * (0.018f + 2.5f * c.subDecay)));
     subHz = 28.0f + 172.0f * c.subTune;

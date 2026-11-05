@@ -29,13 +29,16 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     lfoSyncSelector.addItem("Free Hz", 1); lfoSyncSelector.addItem("Tempo Sync", 2); lfoSyncSelector.setSelectedId(e.parameters.lfoSync.load() + 1, juce::dontSendNotification);
     lfoSyncSelector.setTooltip("Tempo Sync maps each LFO Rate control from fast beat divisions to slow bars using Tempo BPM.");
     lfoSyncSelector.onChange=[this]{engine.parameters.lfoSync.store(lfoSyncSelector.getSelectedId()-1);};
+    modTargetLabel.setText("LFO Target", juce::dontSendNotification); modTargetLabel.setJustificationType(juce::Justification::centredRight); modTargetLabel.setTooltip("Choose whether the global LFO modulates loudness or the shared filter frequency.");
+    modTargetSelector.addItem("Amplitude", 1); modTargetSelector.addItem("Filter Cutoff", 2); modTargetSelector.setSelectedId(e.parameters.modTarget.load() + 1, juce::dontSendNotification);
+    modTargetSelector.setTooltip("Amplitude creates tremolo; Filter Cutoff creates moving resonant timbre."); modTargetSelector.onChange=[this]{engine.parameters.modTarget.store(modTargetSelector.getSelectedId()-1);};
     sampleLayerLabel.setText("Edit Layer", juce::dontSendNotification); sampleLayerLabel.setJustificationType(juce::Justification::centredRight);
     sampleLayerLabel.setTooltip("Choose which of the four sample layers is shown in the detailed ADSR, tuning, delay, and pitch-LFO editor.");
     for (int slot = 0; slot < 4; ++slot) sampleLayerSelector.addItem("Sample Layer " + juce::String(slot + 1), slot + 1);
     sampleLayerSelector.setSelectedId(1, juce::dontSendNotification); sampleLayerSelector.setTooltip("Select a sample layer to edit its labeled detailed controls.");
     sampleLayerSelector.onChange = [this] { showSampleLayer(sampleLayerSelector.getSelectedId() - 1); };
     sampleHeading.setText("SAMPLE IMPACT LAYERS — LOAD UP TO FOUR WAV/AIFF/MP3 FILES", juce::dontSendNotification); sampleHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(surface);
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
@@ -64,7 +67,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Sub Level", "Sub Tune", "Sub Decay", "Sub Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Noise Colour", "Sub Level", "Sub Tune", "Sub Decay", "Sub Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
@@ -78,6 +81,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Modal density and detune. Higher values create a denser, less pitch-centred metal field.",
         "Delayed high-frequency bloom. Higher values create more crash-like evolving metallic energy.",
         "Transient wash. Higher values add more metallic noise at the hit.",
+        "Noise spectrum: low values are body, centre is metallic band, high values are airy transient.",
         "Cinematic sub-impact level.", "Sub oscillator pitch from low thump to tonal impact.", "Sub oscillator release time.", "Delay before the sub arrives on the impact timeline.",
         "Shared filter frequency.", "Shared filter feedback/resonance.", "Tempo-ready modulation LFO speed.", "Global LFO depth; routes to amplitude by default.",
         "Tempo used only while LFO Clock is set to Tempo Sync.",
@@ -92,12 +96,12 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Sample Layer 3 level.", "Sample Layer 3 pitch: low to high.", "Sample Layer 3 ADSR attack.", "Sample Layer 3 ADSR decay.", "Sample Layer 3 ADSR sustain level.", "Sample Layer 3 final release/fade time.", "Sample Layer 3 delay after the metal hit.", "Sample Layer 3 pitch-LFO speed.", "Sample Layer 3 pitch-LFO amount.",
         "Sample Layer 4 level.", "Sample Layer 4 pitch: low to high.", "Sample Layer 4 ADSR attack.", "Sample Layer 4 ADSR decay.", "Sample Layer 4 ADSR sustain level.", "Sample Layer 4 final release/fade time.", "Sample Layer 4 delay after the metal hit.", "Sample Layer 4 pitch-LFO speed.", "Sample Layer 4 pitch-LFO amount."
     };
-    std::atomic<float>* values[] = { &e.parameters.velocity,&e.parameters.variation,&e.parameters.brightness,&e.parameters.decay,&e.parameters.choke,&e.parameters.complexity,&e.parameters.shimmer,&e.parameters.noise,&e.parameters.subLevel,&e.parameters.subTune,&e.parameters.subDecay,&e.parameters.subDelay,&e.parameters.filterCutoff,&e.parameters.filterResonance,&e.parameters.modLfoRate,&e.parameters.modLfoDepth,&e.parameters.tempoBpm,&e.parameters.transient,&e.parameters.drive,&e.parameters.width,&e.parameters.limiter,&e.parameters.reverb,&e.parameters.gain };
+    std::atomic<float>* values[] = { &e.parameters.velocity,&e.parameters.variation,&e.parameters.brightness,&e.parameters.decay,&e.parameters.choke,&e.parameters.complexity,&e.parameters.shimmer,&e.parameters.noise,&e.parameters.noiseTone,&e.parameters.subLevel,&e.parameters.subTune,&e.parameters.subDecay,&e.parameters.subDelay,&e.parameters.filterCutoff,&e.parameters.filterResonance,&e.parameters.modLfoRate,&e.parameters.modLfoDepth,&e.parameters.tempoBpm,&e.parameters.transient,&e.parameters.drive,&e.parameters.width,&e.parameters.limiter,&e.parameters.reverb,&e.parameters.gain };
     for (int i = 0; i < globalControlCount; ++i) {
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
         auto* slider = sliders.add(new juce::Slider(names[i]));
-        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 16 ? 40.0 : 0.0, i == 16 ? 240.0 : 1.0, i == 16 ? 1.0 : .001); slider->setValue(values[i]->load());
+        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 17 ? 40.0 : 0.0, i == 17 ? 240.0 : 1.0, i == 17 ? 1.0 : .001); slider->setValue(values[i]->load());
         slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 64, 20);
         slider->onValueChange = [slider, value = values[i]] { value->store((float) slider->getValue()); };
         addAndMakeVisible(label); addAndMakeVisible(slider);
@@ -135,7 +139,7 @@ void MainEditor::resized()
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(150).reduced(3));
     auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
-    auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(110)); filterSelector.setBounds(selectors.removeFromLeft(155).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(80)); lfoSyncSelector.setBounds(selectors.removeFromLeft(120).reduced(2)); sampleHeading.setBounds(selectors);
+    auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(110)); filterSelector.setBounds(selectors.removeFromLeft(155).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(80)); lfoSyncSelector.setBounds(selectors.removeFromLeft(120).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(80)); modTargetSelector.setBounds(selectors.removeFromLeft(130).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
     auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);

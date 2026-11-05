@@ -5,7 +5,7 @@ namespace {
 void copyParameters(const CymbalParameters& source, CymbalParameters& destination)
 {
     destination.velocity = source.velocity.load(); destination.position = source.position.load(); destination.variation = source.variation.load();
-    destination.brightness = source.brightness.load(); destination.decay = source.decay.load(); destination.choke = source.choke.load(); destination.complexity = source.complexity.load(); destination.shimmer = source.shimmer.load(); destination.noise = source.noise.load();
+    destination.brightness = source.brightness.load(); destination.decay = source.decay.load(); destination.choke = source.choke.load(); destination.complexity = source.complexity.load(); destination.shimmer = source.shimmer.load(); destination.noise = source.noise.load(); destination.noiseTone = source.noiseTone.load();
     destination.subLevel = source.subLevel.load(); destination.subTune = source.subTune.load(); destination.subDecay = source.subDecay.load(); destination.subDelay = source.subDelay.load();
     destination.filterCutoff = source.filterCutoff.load(); destination.filterResonance = source.filterResonance.load(); destination.modLfoRate = source.modLfoRate.load(); destination.modLfoDepth = source.modLfoDepth.load(); destination.tempoBpm = source.tempoBpm.load();
     destination.drive = source.drive.load(); destination.transient = source.transient.load(); destination.width = source.width.load(); destination.limiter = source.limiter.load(); destination.reverb = source.reverb.load(); destination.gain = source.gain.load();

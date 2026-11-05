@@ -6,7 +6,7 @@ template <typename Callback>
 void visitFloatParameters(CymbalParameters& parameters, Callback&& visit)
 {
     visit("velocity", parameters.velocity); visit("position", parameters.position); visit("variation", parameters.variation);
-    visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise);
+    visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise); visit("noiseTone", parameters.noiseTone);
     visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("subDelay", parameters.subDelay);
     visit("filterCutoff", parameters.filterCutoff); visit("filterResonance", parameters.filterResonance); visit("modLfoRate", parameters.modLfoRate); visit("modLfoDepth", parameters.modLfoDepth); visit("tempoBpm", parameters.tempoBpm);
     visit("transient", parameters.transient); visit("drive", parameters.drive); visit("width", parameters.width); visit("limiter", parameters.limiter); visit("reverb", parameters.reverb); visit("gain", parameters.gain);
@@ -16,7 +16,7 @@ template <typename Callback>
 void visitFloatParameters(const CymbalParameters& parameters, Callback&& visit)
 {
     visit("velocity", parameters.velocity); visit("position", parameters.position); visit("variation", parameters.variation);
-    visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise);
+    visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise); visit("noiseTone", parameters.noiseTone);
     visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("subDelay", parameters.subDelay);
     visit("filterCutoff", parameters.filterCutoff); visit("filterResonance", parameters.filterResonance); visit("modLfoRate", parameters.modLfoRate); visit("modLfoDepth", parameters.modLfoDepth); visit("tempoBpm", parameters.tempoBpm);
     visit("transient", parameters.transient); visit("drive", parameters.drive); visit("width", parameters.width); visit("limiter", parameters.limiter); visit("reverb", parameters.reverb); visit("gain", parameters.gain);

@@ -7,7 +7,7 @@ namespace cymbalforge {
 // UI-free, allocation-free per-voice impact renderer. This is intentionally
 // shaped for later adoption by SpaceAge's Voice/renderSelectedEngineVoice path.
 struct ImpactControls {
-    float brightness = .65f, decay = .35f, choke = 0.0f, complexity = .55f, shimmer = .45f, noise = .25f;
+    float brightness = .65f, decay = .35f, choke = 0.0f, complexity = .55f, shimmer = .45f, noise = .25f, noiseTone=.5f;
     float subLevel = 0.0f, subTune = .35f, subDecay = .35f, subDelay=0, filterCutoff = 1.0f, filterResonance = 0.0f;
     float modLfoRate=.25f, modLfoDepth=0, tempoBpm=120.0f; int modTarget=0, lfoSync=0;
     int filterMode = 0, modes = 384, model = 0;

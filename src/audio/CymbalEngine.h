@@ -3,7 +3,7 @@
 #include <atomic>
 namespace cymbalforge {
 struct CymbalParameters {
-    std::atomic<float> velocity{.8f}, position{.65f}, variation{.15f}, brightness{.65f}, decay{.35f}, choke{0}, complexity{.55f}, shimmer{.45f}, noise{.25f};
+    std::atomic<float> velocity{.8f}, position{.65f}, variation{.15f}, brightness{.65f}, decay{.35f}, choke{0}, complexity{.55f}, shimmer{.45f}, noise{.25f}, noiseTone{.5f};
     std::atomic<float> subLevel{0}, subTune{.35f}, subDecay{.35f}, subDelay{0}, filterCutoff{1}, filterResonance{0}, modLfoRate{.25f}, modLfoDepth{0}, tempoBpm{120.0f}, drive{0}, transient{0}, width{.5f}, limiter{.8f}, reverb{.2f}, gain{.75f};
     std::array<std::atomic<float>,4> sampleLevel{}, sampleTune{}, sampleAttack{}, sampleDecay{}, sampleSustain{}, sampleRelease{}, sampleDelay{}, sampleLfoRate{}, sampleLfoDepth{};
     std::atomic<int> filterMode{0}, modTarget{0}, lfoSync{0}, modes{384}, model{0};
