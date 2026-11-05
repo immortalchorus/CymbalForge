@@ -37,7 +37,7 @@ bool PresetManager::save(const juce::File& file, const CymbalEngine& engine)
         object->setProperty(sampleKey(slot, "Loop"), parameters.sampleLoop[(size_t) slot].load());
         object->setProperty(sampleKey(slot, "Path"), engine.sampleFile(slot).getFullPathName());
     }
-    object->setProperty("modes", parameters.modes.load()); object->setProperty("model", parameters.model.load()); object->setProperty("filterMode", parameters.filterMode.load()); object->setProperty("modTarget", parameters.modTarget.load()); object->setProperty("lfoSync", parameters.lfoSync.load()); object->setProperty("exciter", parameters.exciter.load()); object->setProperty("midiPositionMap", parameters.midiPositionMap.load());
+    object->setProperty("modes", parameters.modes.load()); object->setProperty("voiceLimit", parameters.voiceLimit.load()); object->setProperty("model", parameters.model.load()); object->setProperty("filterMode", parameters.filterMode.load()); object->setProperty("modTarget", parameters.modTarget.load()); object->setProperty("lfoSync", parameters.lfoSync.load()); object->setProperty("exciter", parameters.exciter.load()); object->setProperty("midiPositionMap", parameters.midiPositionMap.load());
     return file.replaceWithText(juce::JSON::toString(juce::var(object), true));
 }
 
@@ -55,7 +55,7 @@ bool PresetManager::load(const juce::File& file, CymbalEngine& engine)
         const auto path = object->getProperty(sampleKey(slot, "Path")).toString();
         if (path.isNotEmpty()) engine.loadSampleSlot(slot, juce::File(path)); else engine.clearSampleSlot(slot);
     }
-    if (object->hasProperty("modes")) parameters.modes.store(int(object->getProperty("modes"))); if (object->hasProperty("model")) parameters.model.store(int(object->getProperty("model"))); if (object->hasProperty("filterMode")) parameters.filterMode.store(int(object->getProperty("filterMode"))); if (object->hasProperty("modTarget")) parameters.modTarget.store(int(object->getProperty("modTarget"))); if (object->hasProperty("lfoSync")) parameters.lfoSync.store(int(object->getProperty("lfoSync"))); if (object->hasProperty("exciter")) parameters.exciter.store(int(object->getProperty("exciter"))); if (object->hasProperty("midiPositionMap")) parameters.midiPositionMap.store(int(object->getProperty("midiPositionMap")));
+    if (object->hasProperty("modes")) parameters.modes.store(int(object->getProperty("modes"))); if (object->hasProperty("voiceLimit")) parameters.voiceLimit.store(int(object->getProperty("voiceLimit"))); if (object->hasProperty("model")) parameters.model.store(int(object->getProperty("model"))); if (object->hasProperty("filterMode")) parameters.filterMode.store(int(object->getProperty("filterMode"))); if (object->hasProperty("modTarget")) parameters.modTarget.store(int(object->getProperty("modTarget"))); if (object->hasProperty("lfoSync")) parameters.lfoSync.store(int(object->getProperty("lfoSync"))); if (object->hasProperty("exciter")) parameters.exciter.store(int(object->getProperty("exciter"))); if (object->hasProperty("midiPositionMap")) parameters.midiPositionMap.store(int(object->getProperty("midiPositionMap")));
     return true;
 }
 }
