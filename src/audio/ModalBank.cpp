@@ -2,7 +2,8 @@
 #include <cmath>
 namespace cymbalforge {
 void ModalBank::prepare(double sampleRate) { rate = sampleRate; for (auto& m : modes) m = {}; }
-void ModalBank::strike(float velocity, float position, float brightness, float decay, float complexity, float shimmer, int model, int requestedModes) {
+void ModalBank::strike(const Excitation& excitation) {
+    const auto [velocity, position, brightness, decay, complexity, shimmer, swell, model, requestedModes] = excitation;
     // A cymbal is a dense irregular mode field, not a fundamental with harmonics.
     count = juce::jlimit(64, maxModes, juce::jmax(requestedModes, 128 + int(complexity * float(maxModes - 128))));
     const auto hitRadius = juce::jlimit(0.05f, 0.98f, position);
@@ -33,7 +34,7 @@ void ModalBank::strike(float velocity, float position, float brightness, float d
         auto amplitude = velocity * radiusWeight * spectralTilt / std::sqrt(float(count));
         const auto bloomSeconds = .10f + .32f * (1.0f - highBand);
         const auto bloomStep = 1.0f - std::exp(-1.0f / (bloomSeconds * float(rate)));
-        modes[i] = { 2.0f * r * std::cos(theta), -r * r, amplitude * std::sin(phase), amplitude * std::sin(phase - theta), 1.0f, 1.0f + velocity * shimmer * highBand * 2.6f, std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), 0.0f, bloomStep };
+        modes[i] = { 2.0f * r * std::cos(theta), -r * r, amplitude * std::sin(phase), amplitude * std::sin(phase - theta), 1.0f - .92f * swell, 1.0f + velocity * shimmer * highBand * 2.6f, std::cos((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), std::sin((pan + 1.0f) * juce::MathConstants<float>::pi * 0.25f), 0.0f, bloomStep };
     }
     for (int i = count; i < maxModes; ++i) modes[i] = {};
     energy = velocity;

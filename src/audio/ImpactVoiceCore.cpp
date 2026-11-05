@@ -10,8 +10,8 @@ float lfoFrequency(float normalizedRate, float tempoBpm, bool synced) noexcept
 }
 void ImpactVoiceCore::prepare (double sampleRate) { rate = sampleRate; modal.prepare(rate); noise.prepare(rate); }
 void ImpactVoiceCore::trigger (float velocity, float position, const ImpactControls& c) {
-    modal.strike(velocity, position, c.brightness, c.decay * (1.0f - c.choke), c.complexity, c.shimmer, c.model, c.modes);
-    noise.strike(velocity, c.brightness, c.noise, c.noiseTone, c.shimmer, c.model);
+    modal.strike({ velocity, position, c.brightness, c.decay * (1.0f - c.choke), c.complexity, c.shimmer, c.swell, c.model, c.modes });
+    noise.strike(velocity, c.brightness, c.noise, c.noiseTone, c.shimmer, c.model, c.exciter);
     const auto configureSub = [this, velocity] (SubVoice& sub, float level, float tune, float decay, float delay) { const auto hz = 28.0f + 172.0f * tune; const auto step = juce::MathConstants<float>::twoPi * hz / float(rate); sub.sin=0; sub.cos=1; sub.stepSin=std::sin(step); sub.stepCos=std::cos(step); sub.envelope=velocity*level; sub.decayCoefficient=std::exp(-1.0f/(float(rate)*(.018f+2.5f*decay))); sub.delaySamples=int(delay*2.0f*rate); };
     configureSub(subVoices[0], c.subLevel, c.subTune, c.subDecay, c.subDelay);
     configureSub(subVoices[1], c.sub2Level, c.sub2Tune, c.sub2Decay, c.sub2Delay);
