@@ -55,13 +55,14 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Sub Level", "Sub Tune", "Sub Decay", "Sub Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Sub Level", "Sub Tune", "Sub Decay", "Sub Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Attack", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Attack", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Attack", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
         "Sample 4 Level", "Sample 4 Tune", "Sample 4 Attack", "Sample 4 Release", "Sample 4 Delay", "Sample 4 LFO Rate", "Sample 4 LFO Depth" };
     const char* help[] = {
         "Strike strength. Higher values create a louder, harder hit.",
+        "Changes velocity and strike position slightly on each hit for more natural repeated impacts.",
         "Spectral brightness. Higher values emphasize higher cymbal partials.",
         "Metal ring time. The lowest value is a very short metallic impact.",
         "Damps metal modes immediately. Higher values create tight bars, mutes, and impacts.",
@@ -70,6 +71,10 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Transient wash. Higher values add more metallic noise at the hit.",
         "Cinematic sub-impact level.", "Sub oscillator pitch from low thump to tonal impact.", "Sub oscillator release time.", "Delay before the sub arrives on the impact timeline.",
         "Shared filter frequency.", "Shared filter feedback/resonance.", "Tempo-ready modulation LFO speed.", "Global LFO depth; routes to amplitude by default.",
+        "Emphasizes the first edge of the hit for sharper film-impact attacks.",
+        "Soft saturation after the impact mix. Use for denser, more aggressive hits.",
+        "Stereo spread after the impact mix. Low is focused; high is wide.",
+        "Output ceiling. Lower values protect against unexpectedly hot layers.",
         "Room effect amount. Higher values add more simulated ambience.",
         "Final output level. Lower this control if the sound is too loud.",
         "Sample Layer 1 level.", "Sample Layer 1 pitch: low to high.", "Sample Layer 1 fade-in time.", "Sample Layer 1 decay/release time.", "Sample Layer 1 delay after the metal hit.", "Sample Layer 1 pitch-LFO speed.", "Sample Layer 1 pitch-LFO amount.",
@@ -77,8 +82,8 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Sample Layer 3 level.", "Sample Layer 3 pitch: low to high.", "Sample Layer 3 fade-in time.", "Sample Layer 3 decay/release time.", "Sample Layer 3 delay after the metal hit.", "Sample Layer 3 pitch-LFO speed.", "Sample Layer 3 pitch-LFO amount.",
         "Sample Layer 4 level.", "Sample Layer 4 pitch: low to high.", "Sample Layer 4 fade-in time.", "Sample Layer 4 decay/release time.", "Sample Layer 4 delay after the metal hit.", "Sample Layer 4 pitch-LFO speed.", "Sample Layer 4 pitch-LFO amount."
     };
-    std::atomic<float>* values[] = { &e.parameters.velocity,&e.parameters.brightness,&e.parameters.decay,&e.parameters.choke,&e.parameters.complexity,&e.parameters.shimmer,&e.parameters.noise,&e.parameters.subLevel,&e.parameters.subTune,&e.parameters.subDecay,&e.parameters.subDelay,&e.parameters.filterCutoff,&e.parameters.filterResonance,&e.parameters.modLfoRate,&e.parameters.modLfoDepth,&e.parameters.reverb,&e.parameters.gain };
-    constexpr int globalControlCount = 17;
+    std::atomic<float>* values[] = { &e.parameters.velocity,&e.parameters.variation,&e.parameters.brightness,&e.parameters.decay,&e.parameters.choke,&e.parameters.complexity,&e.parameters.shimmer,&e.parameters.noise,&e.parameters.subLevel,&e.parameters.subTune,&e.parameters.subDecay,&e.parameters.subDelay,&e.parameters.filterCutoff,&e.parameters.filterResonance,&e.parameters.modLfoRate,&e.parameters.modLfoDepth,&e.parameters.transient,&e.parameters.drive,&e.parameters.width,&e.parameters.limiter,&e.parameters.reverb,&e.parameters.gain };
+    constexpr int globalControlCount = 22;
     for (int i = 0; i < globalControlCount; ++i) {
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
@@ -108,10 +113,10 @@ void MainEditor::resized()
     auto b = getLocalBounds().reduced(14);
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(150).reduced(3));
-    auto controls = b.removeFromBottom(460); controlHeading.setBounds(controls.removeFromTop(22));
+    auto controls = b.removeFromBottom(510); controlHeading.setBounds(controls.removeFromTop(22));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(110)); filterSelector.setBounds(selectors.removeFromLeft(155).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
-    surface.setBounds(b); auto rows=7, columns=7, slotWidth=controls.getWidth()/columns, slotHeight=controls.getHeight()/rows;
+    surface.setBounds(b); auto rows=8, columns=7, slotWidth=controls.getWidth()/columns, slotHeight=controls.getHeight()/rows;
     for (int i = 0; i < sliders.size(); ++i) { auto row=i/columns, column=i%columns; auto slot=juce::Rectangle<int>(controls.getX()+column*slotWidth,controls.getY()+row*slotHeight,slotWidth,slotHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
 }
 }
