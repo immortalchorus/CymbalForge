@@ -4,7 +4,7 @@
 namespace cymbalforge {
 struct CymbalParameters {
     std::atomic<float> velocity{.8f}, position{.65f}, variation{.15f}, velocityTone{0}, brightness{.65f}, decay{.35f}, choke{0}, complexity{.55f}, shimmer{.45f}, swell{0}, noise{.25f}, noiseTone{.5f}, noiseDecay{.35f};
-    std::atomic<float> subLevel{0}, subTune{.35f}, subDecay{.35f}, subDelay{0}, sub2Level{0}, sub2Tune{.65f}, sub2Decay{.2f}, sub2Delay{0}, filterCutoff{1}, filterResonance{0}, filterEnvAmount{0}, filterEnvDecay{.25f}, modLfoRate{.25f}, modLfoDepth{0}, tempoBpm{120.0f}, masterTune{0}, rattle{0}, drive{0}, transient{0}, width{.5f}, limiter{.8f}, reverb{.2f}, gain{.75f};
+    std::atomic<float> subLevel{0}, subTune{.35f}, subDecay{.35f}, subDelay{0}, sub2Level{0}, sub2Tune{.65f}, sub2Decay{.2f}, sub2Delay{0}, filterCutoff{1}, filterResonance{0}, filterEnvAmount{0}, filterEnvDecay{.25f}, modLfoRate{.25f}, modLfoDepth{0}, tempoBpm{120.0f}, masterTune{0}, rattle{0}, pitchDrift{0}, drive{0}, transient{0}, width{.5f}, limiter{.8f}, reverb{.2f}, gain{.75f};
     std::array<std::atomic<float>,4> sampleLevel{}, sampleTune{}, sampleStart{}, samplePan{}, sampleAttack{}, sampleDecay{}, sampleSustain{}, sampleRelease{}, sampleDelay{}, sampleLfoRate{}, sampleLfoDepth{};
     std::array<std::atomic<int>,4> sampleLoop{}, sampleReverse{};
     std::atomic<int> filterMode{0}, modTarget{0}, lfoSync{0}, exciter{0}, midiPositionMap{0}, midiTuneMap{0}, modes{384}, voiceLimit{4}, model{0};
