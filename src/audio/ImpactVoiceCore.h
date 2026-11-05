@@ -24,6 +24,7 @@ public:
     void release() noexcept;
     std::array<float, 2> render();
     bool active() const noexcept;
+    bool samplesActive() const noexcept;
     void setSample (int slot, std::shared_ptr<const ImpactSampleData> sample);
 private:
     ModalBank modal;

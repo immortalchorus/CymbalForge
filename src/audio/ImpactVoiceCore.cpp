@@ -30,6 +30,7 @@ std::array<float, 2> ImpactVoiceCore::render() {
     if(filterMode==1) return {filterLowL,filterLowR}; if(filterMode==2) return {left-filterLowL,right-filterLowR}; if(filterMode==3) return {filterBandL,filterBandR}; return {left,right};
 }
 bool ImpactVoiceCore::active() const noexcept { if(modal.active()) return true; for(const auto& sub:subVoices) if(sub.envelope>.00001f) return true; for(const auto& voice:sampleVoices) if(voice.active) return true; return false; }
+bool ImpactVoiceCore::samplesActive() const noexcept { for (const auto& voice : sampleVoices) if (voice.active) return true; return false; }
 void ImpactVoiceCore::release() noexcept { for (auto& voice : sampleVoices) voice.released = true; }
 void ImpactVoiceCore::setSample (int slot, std::shared_ptr<const ImpactSampleData> sample) { if(juce::isPositiveAndBelow(slot,4)) std::atomic_store_explicit(&sampleData[(size_t)slot],std::move(sample),std::memory_order_release); }
 }
