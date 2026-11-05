@@ -2,9 +2,9 @@
 
 namespace cymbalforge {
 namespace {
-std::array<std::atomic<float>*, 24> globalValues(CymbalParameters& p)
+std::array<std::atomic<float>*, 28> globalValues(CymbalParameters& p)
 {
-    return { &p.velocity,&p.variation,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.noise,&p.noiseTone,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.filterCutoff,&p.filterResonance,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
+    return { &p.velocity,&p.variation,&p.brightness,&p.decay,&p.choke,&p.complexity,&p.shimmer,&p.noise,&p.noiseTone,&p.subLevel,&p.subTune,&p.subDecay,&p.subDelay,&p.sub2Level,&p.sub2Tune,&p.sub2Decay,&p.sub2Delay,&p.filterCutoff,&p.filterResonance,&p.modLfoRate,&p.modLfoDepth,&p.tempoBpm,&p.transient,&p.drive,&p.width,&p.limiter,&p.reverb,&p.gain };
 }
 
 std::array<std::atomic<float>*, 9> layerValues(CymbalParameters& p, int slot)
@@ -83,7 +83,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     };
     exportWav.onClick = [this, presetDirectory] { auto f=presetDirectory.getChildFile("cymbal-hit.wav"); status.setText(OfflineRenderer::renderWav(f,engine)?"24-bit WAV exported to Documents/CymbalForge/cymbal-hit.wav":"WAV export failed",juce::dontSendNotification); };
 
-    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Noise Colour", "Sub Level", "Sub Tune", "Sub Decay", "Sub Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
+    const char* names[] = { "Velocity", "Strike Variation", "Brightness", "Metal Decay", "Choke", "Complexity", "Shimmer", "Noise", "Noise Colour", "Sub 1 Level", "Sub 1 Tune", "Sub 1 Decay", "Sub 1 Delay", "Sub 2 Level", "Sub 2 Tune", "Sub 2 Decay", "Sub 2 Delay", "Filter Cutoff", "Filter Resonance", "Mod LFO Rate", "Mod LFO Depth", "Tempo BPM", "Transient", "Drive", "Stereo Width", "Safety Limiter", "Reverb", "Output Gain",
         "Sample 1 Level", "Sample 1 Tune", "Sample 1 Attack", "Sample 1 Decay", "Sample 1 Sustain", "Sample 1 Release", "Sample 1 Delay", "Sample 1 LFO Rate", "Sample 1 LFO Depth",
         "Sample 2 Level", "Sample 2 Tune", "Sample 2 Attack", "Sample 2 Decay", "Sample 2 Sustain", "Sample 2 Release", "Sample 2 Delay", "Sample 2 LFO Rate", "Sample 2 LFO Depth",
         "Sample 3 Level", "Sample 3 Tune", "Sample 3 Attack", "Sample 3 Decay", "Sample 3 Sustain", "Sample 3 Release", "Sample 3 Delay", "Sample 3 LFO Rate", "Sample 3 LFO Depth",
@@ -98,7 +98,8 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         "Delayed high-frequency bloom. Higher values create more crash-like evolving metallic energy.",
         "Transient wash. Higher values add more metallic noise at the hit.",
         "Noise spectrum: low values are body, centre is metallic band, high values are airy transient.",
-        "Cinematic sub-impact level.", "Sub oscillator pitch from low thump to tonal impact.", "Sub oscillator release time.", "Delay before the sub arrives on the impact timeline.",
+        "First cinematic sub-impact level.", "First sub oscillator pitch from low thump to tonal impact.", "First sub oscillator release time.", "Delay before Sub 1 arrives on the impact timeline.",
+        "Second sub-impact level for layered cinematic impacts.", "Second sub oscillator pitch; set apart from Sub 1 for a richer impact body.", "Second sub oscillator release time.", "Delay before Sub 2 arrives on the impact timeline.",
         "Shared filter frequency.", "Shared filter feedback/resonance.", "Tempo-ready modulation LFO speed.", "Global LFO depth; routes to amplitude by default.",
         "Tempo used only while LFO Clock is set to Tempo Sync.",
         "Emphasizes the first edge of the hit for sharper film-impact attacks.",
@@ -117,7 +118,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         auto* label = controlLabels.add(new juce::Label());
         label->setText(names[i], juce::dontSendNotification); label->setTooltip(help[i]); label->setJustificationType(juce::Justification::centred);
         auto* slider = sliders.add(new juce::Slider(names[i]));
-        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 17 ? 40.0 : 0.0, i == 17 ? 240.0 : 1.0, i == 17 ? 1.0 : .001); slider->setValue(values[i]->load());
+        slider->setName(names[i]); slider->setTooltip(help[i]); slider->setRange(i == 21 ? 40.0 : 0.0, i == 21 ? 240.0 : 1.0, i == 21 ? 1.0 : .001); slider->setValue(values[i]->load());
         slider->setTextBoxStyle(juce::Slider::TextBoxBelow, false, 64, 20);
         slider->onValueChange = [slider, value = values[i]] { value->store((float) slider->getValue()); };
         addAndMakeVisible(label); addAndMakeVisible(slider);
@@ -181,7 +182,7 @@ void MainEditor::resized()
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
     auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
-    constexpr int globalColumns = 6, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
+    constexpr int globalColumns = 7, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
     for (int i = 0; i < globalControlCount; ++i) { auto slot = juce::Rectangle<int>(controls.getX() + (i % globalColumns) * globalWidth, controls.getY() + (i / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
     constexpr int layerColumns = 9; const auto layerWidth = layerControls.getWidth() / layerColumns;
     for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + control * layerWidth, layerControls.getY(), layerWidth, layerControls.getHeight()).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }

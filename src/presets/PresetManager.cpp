@@ -7,7 +7,7 @@ void visitFloatParameters(CymbalParameters& parameters, Callback&& visit)
 {
     visit("velocity", parameters.velocity); visit("position", parameters.position); visit("variation", parameters.variation);
     visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise); visit("noiseTone", parameters.noiseTone);
-    visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("subDelay", parameters.subDelay);
+    visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("subDelay", parameters.subDelay); visit("sub2Level", parameters.sub2Level); visit("sub2Tune", parameters.sub2Tune); visit("sub2Decay", parameters.sub2Decay); visit("sub2Delay", parameters.sub2Delay);
     visit("filterCutoff", parameters.filterCutoff); visit("filterResonance", parameters.filterResonance); visit("modLfoRate", parameters.modLfoRate); visit("modLfoDepth", parameters.modLfoDepth); visit("tempoBpm", parameters.tempoBpm);
     visit("transient", parameters.transient); visit("drive", parameters.drive); visit("width", parameters.width); visit("limiter", parameters.limiter); visit("reverb", parameters.reverb); visit("gain", parameters.gain);
 }
@@ -17,7 +17,7 @@ void visitFloatParameters(const CymbalParameters& parameters, Callback&& visit)
 {
     visit("velocity", parameters.velocity); visit("position", parameters.position); visit("variation", parameters.variation);
     visit("brightness", parameters.brightness); visit("decay", parameters.decay); visit("choke", parameters.choke); visit("complexity", parameters.complexity); visit("shimmer", parameters.shimmer); visit("noise", parameters.noise); visit("noiseTone", parameters.noiseTone);
-    visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("subDelay", parameters.subDelay);
+    visit("subLevel", parameters.subLevel); visit("subTune", parameters.subTune); visit("subDecay", parameters.subDecay); visit("sub2Level", parameters.sub2Level); visit("sub2Tune", parameters.sub2Tune); visit("sub2Decay", parameters.sub2Decay); visit("sub2Delay", parameters.sub2Delay); visit("subDelay", parameters.subDelay);
     visit("filterCutoff", parameters.filterCutoff); visit("filterResonance", parameters.filterResonance); visit("modLfoRate", parameters.modLfoRate); visit("modLfoDepth", parameters.modLfoDepth); visit("tempoBpm", parameters.tempoBpm);
     visit("transient", parameters.transient); visit("drive", parameters.drive); visit("width", parameters.width); visit("limiter", parameters.limiter); visit("reverb", parameters.reverb); visit("gain", parameters.gain);
 }
