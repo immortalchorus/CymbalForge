@@ -66,9 +66,11 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
     load.setTooltip("Choose a CymbalForge JSON preset to restore its sound controls.");
     exportWav.setTooltip("Render a 24-bit WAV cymbal hit to Documents/CymbalForge/cymbal-hit.wav.");
+    clearLayer.setTooltip("Unload audio from the selected sample layer. Its labeled controls remain ready for a new file.");
     for (auto* button : { &audition, &save, &load, &exportWav }) { button->setName(button->getButtonText()); addAndMakeVisible(button); }
 
     audition.onClick = [this] { engine.strike(engine.parameters.velocity.load(), engine.parameters.position.load()); status.setText("Auditioning current cymbal strike.", juce::dontSendNotification); };
+    clearLayer.onClick = [this] { engine.clearSampleSlot(selectedSampleLayer); status.setText("Cleared Sample Layer " + juce::String(selectedSampleLayer + 1) + ".", juce::dontSendNotification); };
     auto presetDirectory = juce::File::getSpecialLocation(juce::File::userDocumentsDirectory).getChildFile("CymbalForge"); presetDirectory.createDirectory();
     for(int slot=0;slot<4;++slot) { auto* button=sampleLoadButtons.add(new juce::TextButton("Load Sample " + juce::String(slot+1))); button->setName("Sample layer " + juce::String(slot+1)); button->setTooltip("Load audio into Sample Layer " + juce::String(slot+1) + ". Its level, tune, envelope, delay, and pitch LFO are available in the control grid."); button->onClick=[this,slot]{ sampleChooser=std::make_unique<juce::FileChooser>("Load impact sample",juce::File(),"*.wav;*.aif;*.aiff;*.mp3"); sampleChooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectFiles,[this,slot](const juce::FileChooser& chooser){auto file=chooser.getResult(); if(file==juce::File{}) return; status.setText(engine.loadSampleSlot(slot,file)?"Loaded Sample "+juce::String(slot+1)+": "+file.getFileName():"Sample load failed",juce::dontSendNotification);}); }; addAndMakeVisible(button); }
     save.onClick = [this, presetDirectory] {
@@ -189,7 +191,7 @@ void MainEditor::resized()
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(140).reduced(3)); starterLabel.setBounds(actions.removeFromLeft(95)); starterSelector.setBounds(actions.removeFromLeft(230).reduced(2));
     auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(100)); filterSelector.setBounds(selectors.removeFromLeft(135).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(70)); lfoSyncSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(72)); modTargetSelector.setBounds(selectors.removeFromLeft(110).reduced(2)); exciterLabel.setBounds(selectors.removeFromLeft(55)); exciterSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); sampleHeading.setBounds(selectors);
-    auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2));
+    auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2)); clearLayer.setBounds(loads.removeFromLeft(165).reduced(2)); addAndMakeVisible(clearLayer);
     auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2)); sampleLoopLabel.setBounds(layerBar.removeFromLeft(85)); sampleLoopSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
     constexpr int globalColumns = 8, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;

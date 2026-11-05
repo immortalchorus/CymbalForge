@@ -53,7 +53,7 @@ bool PresetManager::load(const juce::File& file, CymbalEngine& engine)
         get("Level", parameters.sampleLevel[(size_t) slot]); get("Tune", parameters.sampleTune[(size_t) slot]); get("Attack", parameters.sampleAttack[(size_t) slot]); get("Decay", parameters.sampleDecay[(size_t) slot]); get("Sustain", parameters.sampleSustain[(size_t) slot]); get("Release", parameters.sampleRelease[(size_t) slot]); get("Delay", parameters.sampleDelay[(size_t) slot]); get("LfoRate", parameters.sampleLfoRate[(size_t) slot]); get("LfoDepth", parameters.sampleLfoDepth[(size_t) slot]);
         const auto loopKey = sampleKey(slot, "Loop"); if (object->hasProperty(loopKey)) parameters.sampleLoop[(size_t) slot].store(int(object->getProperty(loopKey)));
         const auto path = object->getProperty(sampleKey(slot, "Path")).toString();
-        if (path.isNotEmpty()) engine.loadSampleSlot(slot, juce::File(path));
+        if (path.isNotEmpty()) engine.loadSampleSlot(slot, juce::File(path)); else engine.clearSampleSlot(slot);
     }
     if (object->hasProperty("modes")) parameters.modes.store(int(object->getProperty("modes"))); if (object->hasProperty("model")) parameters.model.store(int(object->getProperty("model"))); if (object->hasProperty("filterMode")) parameters.filterMode.store(int(object->getProperty("filterMode"))); if (object->hasProperty("modTarget")) parameters.modTarget.store(int(object->getProperty("modTarget"))); if (object->hasProperty("lfoSync")) parameters.lfoSync.store(int(object->getProperty("lfoSync"))); if (object->hasProperty("exciter")) parameters.exciter.store(int(object->getProperty("exciter")));
     return true;
