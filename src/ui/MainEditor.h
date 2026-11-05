@@ -12,14 +12,16 @@ private:
     static constexpr int globalControlCount = 24;
     static constexpr int sampleControlCount = 9;
     void showSampleLayer(int slot);
+    void refreshFromEngine();
+    void applyStarterSound(int id);
     CymbalEngine& engine;
     CymbalSurface surface;
     juce::OwnedArray<juce::Slider> sliders;
     juce::OwnedArray<juce::Label> controlLabels;
     juce::OwnedArray<juce::TextButton> sampleLoadButtons;
     juce::Label title, status, controlHeading, modelLabel;
-    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, sampleLayerSelector;
-    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, sampleHeading, sampleLayerLabel;
+    juce::ComboBox modelSelector, filterSelector, lfoSyncSelector, modTargetSelector, sampleLayerSelector, starterSelector;
+    juce::Label filterLabel, lfoSyncLabel, modTargetLabel, sampleHeading, sampleLayerLabel, starterLabel;
     int selectedSampleLayer = 0;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
     juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"};
