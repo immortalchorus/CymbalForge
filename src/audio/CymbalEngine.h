@@ -8,6 +8,7 @@ struct CymbalParameters {
     std::array<std::atomic<float>,4> sampleLevel{}, sampleTune{}, sampleAttack{}, sampleDecay{}, sampleSustain{}, sampleRelease{}, sampleDelay{}, sampleLfoRate{}, sampleLfoDepth{};
     std::atomic<int> filterMode{0}, modTarget{0}, lfoSync{0}, modes{384}, model{0};
     CymbalParameters() { for(int i=0;i<4;++i){ sampleLevel[(size_t)i]=0; sampleTune[(size_t)i]=.5f; sampleAttack[(size_t)i]=0; sampleDecay[(size_t)i]=.3f; sampleSustain[(size_t)i]=1; sampleRelease[(size_t)i]=.35f; sampleDelay[(size_t)i]=0; sampleLfoRate[(size_t)i]=.25f; sampleLfoDepth[(size_t)i]=0; } }
+    void copyFrom(const CymbalParameters& source) noexcept;
     ImpactControls snapshot() const noexcept;
 };
 class CymbalEngine { public: static constexpr int maxImpactVoices=4; CymbalParameters parameters; void prepare(double rate, int block); void strike(float velocity, float position); void render(juce::AudioBuffer<float>& buffer, int start, int count); bool loadSampleSlot(int slot,const juce::File&); juce::File sampleFile(int slot) const; private: std::array<ImpactVoiceCore,maxImpactVoices> impacts; int nextImpactVoice=0; juce::Random variationRandom{0x494d5041}; float previousL=0,previousR=0; juce::dsp::Reverb reverb; juce::AudioFormatManager formats; std::array<juce::File,4> sampleFiles; };
