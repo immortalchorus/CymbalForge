@@ -50,6 +50,9 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     midiPositionLabel.setText("MIDI Position", juce::dontSendNotification); midiPositionLabel.setJustificationType(juce::Justification::centredRight); midiPositionLabel.setTooltip("Choose fixed strike position or map MIDI note number from bell to edge.");
     midiPositionSelector.addItem("Fixed", 1); midiPositionSelector.addItem("Note → Bell/Edge", 2); midiPositionSelector.setSelectedId(e.parameters.midiPositionMap.load()+1, juce::dontSendNotification);
     midiPositionSelector.setTooltip("Note mapping turns MIDI pitch into strike position from bell through edge."); midiPositionSelector.onChange=[this]{engine.parameters.midiPositionMap.store(midiPositionSelector.getSelectedId()-1);};
+    globalPageLabel.setText("Control Page", juce::dontSendNotification); globalPageLabel.setJustificationType(juce::Justification::centredRight); globalPageLabel.setTooltip("Choose a focused set of global sound controls. Every control remains available on one of these labeled pages.");
+    globalPageSelector.addItem("Metal & Noise", 1); globalPageSelector.addItem("Impact & Filter", 2); globalPageSelector.addItem("Motion & Output", 3); globalPageSelector.setSelectedId(1, juce::dontSendNotification);
+    globalPageSelector.setTooltip("Metal & Noise shapes the cymbal source; Impact & Filter shapes cinematic weight; Motion & Output shapes modulation and mix."); globalPageSelector.onChange=[this]{showGlobalPage(globalPageSelector.getSelectedId()-1);};
     sampleLayerLabel.setText("Edit Layer", juce::dontSendNotification); sampleLayerLabel.setJustificationType(juce::Justification::centredRight);
     sampleLayerLabel.setTooltip("Choose which of the four sample layers is shown in the detailed ADSR, tuning, delay, and pitch-LFO editor.");
     for (int slot = 0; slot < 4; ++slot) sampleLayerSelector.addItem("Sample Layer " + juce::String(slot + 1), slot + 1);
@@ -63,7 +66,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
     starterSelector.setSelectedId(1, juce::dontSendNotification); starterSelector.setTooltip("Loads a useful starting configuration. It does not load or erase your audio files.");
     starterSelector.onChange = [this] { if (starterSelector.getSelectedId() > 1) applyStarterSound(starterSelector.getSelectedId()); };
     sampleHeading.setText("SAMPLE IMPACT LAYERS — LOAD UP TO FOUR WAV/AIFF/MP3 FILES", juce::dontSendNotification); sampleHeading.setJustificationType(juce::Justification::centredLeft);
-    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(exciterLabel); addAndMakeVisible(exciterSelector); addAndMakeVisible(midiPositionLabel); addAndMakeVisible(midiPositionSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(sampleLoopLabel); addAndMakeVisible(sampleLoopSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
+    addAndMakeVisible(title); addAndMakeVisible(status); addAndMakeVisible(controlHeading); addAndMakeVisible(modelLabel); addAndMakeVisible(modelSelector); addAndMakeVisible(filterLabel); addAndMakeVisible(filterSelector); addAndMakeVisible(lfoSyncLabel); addAndMakeVisible(lfoSyncSelector); addAndMakeVisible(modTargetLabel); addAndMakeVisible(modTargetSelector); addAndMakeVisible(exciterLabel); addAndMakeVisible(exciterSelector); addAndMakeVisible(midiPositionLabel); addAndMakeVisible(midiPositionSelector); addAndMakeVisible(globalPageLabel); addAndMakeVisible(globalPageSelector); addAndMakeVisible(sampleHeading); addAndMakeVisible(sampleLayerLabel); addAndMakeVisible(sampleLayerSelector); addAndMakeVisible(sampleLoopLabel); addAndMakeVisible(sampleLoopSelector); addAndMakeVisible(starterLabel); addAndMakeVisible(starterSelector); addAndMakeVisible(surface);
 
     audition.setTooltip("Audition the cymbal using the current Velocity and strike position.");
     save.setTooltip("Choose a name and location for a JSON preset containing the current sound controls.");
@@ -151,6 +154,7 @@ MainEditor::MainEditor(CymbalEngine& e) : engine(e), surface(e)
         }
     }
     showSampleLayer(0);
+    showGlobalPage(0);
 }
 
 void MainEditor::showSampleLayer(int slot)
@@ -160,6 +164,17 @@ void MainEditor::showSampleLayer(int slot)
     for (int index = globalControlCount; index < sliders.size(); ++index) {
         const auto layer = (index - globalControlCount) / sampleControlCount;
         const auto visible = layer == selectedSampleLayer;
+        sliders[index]->setVisible(visible); controlLabels[index]->setVisible(visible);
+    }
+    resized();
+}
+
+void MainEditor::showGlobalPage(int page)
+{
+    selectedGlobalPage = juce::jlimit(0, 2, page);
+    const int first[] { 0, 12, 24 }, last[] { 12, 24, globalControlCount };
+    for (int index = 0; index < globalControlCount; ++index) {
+        const auto visible = index >= first[selectedGlobalPage] && index < last[selectedGlobalPage];
         sliders[index]->setVisible(visible); controlLabels[index]->setVisible(visible);
     }
     resized();
@@ -194,12 +209,13 @@ void MainEditor::resized()
     auto header = b.removeFromTop(30); title.setBounds(header.removeFromLeft(350)); modelLabel.setBounds(header.removeFromLeft(100)); modelSelector.setBounds(header.removeFromLeft(220).reduced(2)); status.setBounds(header);
     auto actions = b.removeFromTop(34); for (auto* x : { &audition, &save, &load, &exportWav }) x->setBounds(actions.removeFromLeft(108).reduced(3)); starterLabel.setBounds(actions.removeFromLeft(70)); starterSelector.setBounds(actions.removeFromLeft(175).reduced(2)); midiPositionLabel.setBounds(actions.removeFromLeft(75)); midiPositionSelector.setBounds(actions.removeFromLeft(175).reduced(2));
     auto controls = b.removeFromBottom(430); controlHeading.setBounds(controls.removeFromTop(22));
+    auto pageBar = controls.removeFromTop(28); globalPageLabel.setBounds(pageBar.removeFromLeft(110)); globalPageSelector.setBounds(pageBar.removeFromLeft(210).reduced(2));
     auto selectors=controls.removeFromTop(28); filterLabel.setBounds(selectors.removeFromLeft(100)); filterSelector.setBounds(selectors.removeFromLeft(135).reduced(2)); lfoSyncLabel.setBounds(selectors.removeFromLeft(70)); lfoSyncSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); modTargetLabel.setBounds(selectors.removeFromLeft(72)); modTargetSelector.setBounds(selectors.removeFromLeft(110).reduced(2)); exciterLabel.setBounds(selectors.removeFromLeft(55)); exciterSelector.setBounds(selectors.removeFromLeft(105).reduced(2)); sampleHeading.setBounds(selectors);
     auto loads=controls.removeFromTop(30); for(auto* button:sampleLoadButtons) button->setBounds(loads.removeFromLeft(145).reduced(2)); clearLayer.setBounds(loads.removeFromLeft(165).reduced(2)); addAndMakeVisible(clearLayer);
     auto layerBar = controls.removeFromTop(28); sampleLayerLabel.setBounds(layerBar.removeFromLeft(110)); sampleLayerSelector.setBounds(layerBar.removeFromLeft(170).reduced(2)); sampleLoopLabel.setBounds(layerBar.removeFromLeft(85)); sampleLoopSelector.setBounds(layerBar.removeFromLeft(170).reduced(2));
     auto layerControls = controls.removeFromBottom(122); surface.setBounds(b);
-    constexpr int globalColumns = 9, globalRows = 4; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
-    for (int i = 0; i < globalControlCount; ++i) { auto slot = juce::Rectangle<int>(controls.getX() + (i % globalColumns) * globalWidth, controls.getY() + (i / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
+    const int first[] { 0, 12, 24 }, last[] { 12, 24, globalControlCount }; constexpr int globalColumns = 4; const auto globalCount = last[selectedGlobalPage] - first[selectedGlobalPage], globalRows = (globalCount + globalColumns - 1) / globalColumns; const auto globalWidth = controls.getWidth() / globalColumns, globalHeight = controls.getHeight() / globalRows;
+    for (int i = first[selectedGlobalPage], shown = 0; i < last[selectedGlobalPage]; ++i, ++shown) { auto slot = juce::Rectangle<int>(controls.getX() + (shown % globalColumns) * globalWidth, controls.getY() + (shown / globalColumns) * globalHeight, globalWidth, globalHeight).reduced(4); controlLabels[i]->setBounds(slot.removeFromTop(20)); sliders[i]->setBounds(slot); }
     constexpr int layerColumns = 9; const auto layerWidth = layerControls.getWidth() / layerColumns;
     for (int control = 0; control < sampleControlCount; ++control) { const auto index = globalControlCount + selectedSampleLayer * sampleControlCount + control; auto slot = juce::Rectangle<int>(layerControls.getX() + control * layerWidth, layerControls.getY(), layerWidth, layerControls.getHeight()).reduced(4); controlLabels[index]->setBounds(slot.removeFromTop(20)); sliders[index]->setBounds(slot); }
 }
