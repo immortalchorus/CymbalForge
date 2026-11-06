@@ -25,6 +25,6 @@ private:
     juce::Label filterLabel, lfoSyncLabel, modTargetLabel, exciterLabel, qualityLabel, midiPositionLabel, midiTuneLabel, globalPageLabel, sampleHeading, sampleLayerLabel, sampleLoopLabel, sampleDirectionLabel, starterLabel;
     int selectedSampleLayer = 0, selectedGlobalPage = 0;
     std::unique_ptr<juce::FileChooser> presetChooser, sampleChooser;
-    juce::TextButton audition{"Strike Cymbal"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"}, clearLayer{"Clear Selected Layer"};
+    juce::TextButton audition{"Strike Cymbal"}, randomize{"Randomize Impact"}, save{"Save Preset"}, load{"Load Preset"}, exportWav{"Export WAV Hit"}, clearLayer{"Clear Selected Layer"};
 };
 }
